@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cd "$HOME"
+for FILE in config/*; do
+    pushd "$HOME"
+    DOTFILE=".${FILE##*/}"
+    ln -s "$FILE" "$DOTFILE"
+    popd
+done
