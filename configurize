@@ -10,17 +10,17 @@ while [ $# -gt 0 ]; do
     echo " * Configurizing $NEWFILE ..."
     mv "$FILE" "$CONFIG/$NEWFILE"
     ln -s "$CONFIG/$NEWFILE" "$FILE"
-    cd "$CONFIG"
+    pushd "$CONFIG"
     git add "$NEWFILE"
     git commit -m "[NEW] Configurized '$NEWFILE'"
-    cd - >/dev/null
+    popd
 done
 
 echo " * $NUMFILES new files/directories"
 
 echo " * Pushing configs to remote repository ... "
-cd "$CONFIG"
+pushd "$CONFIG"
 git push origin master
-cd - >/dev/null
+popd
 
 echo " * Done"
