@@ -1,0 +1,2 @@
+#!/bin/sh
+[[ x"$1" = x ]] && cp -R . ~/Dropbox/${PWD##*/} || cp -R "$@" ~/Dropbox/

@@ -1,0 +1,26 @@
+#!/bin/sh
+
+CONFIG="$HOME/config"
+
+NUMFILES=$#
+while [ $# -gt 0 ]; do
+    FILE="$1"
+    shift
+    NEWFILE="${FILE#.}"
+    echo " * Configurizing $NEWFILE ..."
+    mv "$FILE" "$CONFIG/$NEWFILE"
+    ln -s "$CONFIG/$NEWFILE" "$FILE"
+    cd "$CONFIG"
+    git add "$NEWFILE"
+    git commit -m "[NEW] Configurized '$NEWFILE'"
+    cd - >/dev/null
+done
+
+echo " * $NUMFILES new files/directories"
+
+echo " * Pushing configs to remote repository ... "
+cd "$CONFIG"
+git push origin master
+cd - >/dev/null
+
+echo " * Done"
