@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ssh nofxwiki.net "/home/sjs/bin/mkgit $1"
+git remote add -m master origin ssh://nofxwiki.net/var/git/$1.git
+git config branch.master.merge refs/heads/master
+git push origin master
