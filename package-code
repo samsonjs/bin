@@ -1,0 +1,18 @@
+#!/bin/sh
+
+ORIG_DIR=`basename "${PWD}"`
+CODE_DIR="${ORIG_DIR}-project"
+ZIP_FILE="${CODE_DIR}.zip"
+
+echo "Zipping project in ${PWD}..."
+
+pushd .. >/dev/null
+cp -a "${ORIG_DIR}" "${CODE_DIR}"
+pushd "${CODE_DIR}" >/dev/null
+rm -rf **/.git* **/build generated/
+popd >/dev/null
+zip -T -r -y "${ZIP_FILE}" "${CODE_DIR}"
+rm -rf "${CODE_DIR}"
+popd >/dev/null
+
+echo "done, project is in ${ZIP_FILE}"
