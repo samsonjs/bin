@@ -9,7 +9,7 @@ echo "Zipping project in ${PWD}..."
 pushd .. >/dev/null
 cp -a "${ORIG_DIR}" "${CODE_DIR}"
 pushd "${CODE_DIR}" >/dev/null
-rm -rf **/.git* **/build generated/
+rm -rf .git* **/.git* **/build generated/
 popd >/dev/null
 zip -T -r -y "${ZIP_FILE}" "${CODE_DIR}"
 rm -rf "${CODE_DIR}"
