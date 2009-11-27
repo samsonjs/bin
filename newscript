@@ -13,12 +13,17 @@ case "$TYPE" in
         ;;
     -pl)
         TYPE=".pl"
-        SHEBANG="#!/usr/bin/perl -w\nuse strict;"
+        SHEBANG="#!/usr/bin/env perl -w\nuse strict;"
         shift
         ;;
     -py)
         TYPE=".py"
-        SHEBANG="#!/usr/bin/python"
+        SHEBANG="#!/usr/bin/env python"
+        shift
+        ;;
+    -rb)
+        TYPE=".rb"
+        SHEBANG="#!/usr/bin/env ruby"
         shift
         ;;
     -sh)
@@ -28,7 +33,7 @@ case "$TYPE" in
         ;;
     -zsh)
         TYPE=".zsh"
-        SHEBANG="#!/bin/zsh"
+        SHEBANG="#!/usr/bin/env zsh"
         shift
         ;;
     *)
@@ -39,7 +44,7 @@ esac
 while [[ -n ${1} ]] ; do
 	SCRIPT=${SCRIPT_DIR}/${1}${TYPE}
     if [[ -n ${TYPE} ]] && [[ ! -e ${SCRIPT} ]]; then
-        echo -e "${SHEBANG}" > ${SCRIPT}
+        echo "${SHEBANG}" > ${SCRIPT}
         chmod +x ${SCRIPT}
     elif [[ ! -e ${SCRIPT} ]]; then
         touch ${SCRIPT}
