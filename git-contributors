@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+def git_dir?
+  File.exists?('.git') || `git rev-parse --git-dir >/dev/null`
+end
+
+def authors
+  `git log | grep '^Author:' | sed -e 's/Author: //g' | sort -f | uniq`.split(/\n/)
+end
+
+def authors_by_field n
+  raise "invalid field #{n}, expected 0 or 1" unless n == 0 || n == 1
+  other = (n-1).abs
+  authors.inject({}) do |as, a|
+    parts = a.split(' <')
+    parts[1].sub!(/>$/, '')
+    (as[parts[n]] ||= []) << parts[other]
+    as
+  end
+end
+
+def authors_by_name; authors_by_field(0) end
+def authors_by_email; authors_by_field(1) end
+
+def main
+  exit 1 unless git_dir?
+  
+  sort = :name
+  sort = ARGV.first.to_sym if ARGV.length > 0
+  if sort == :name
+    authors_by_name.each do |name, emails|
+      puts "#{name} <#{emails.join(', ')}>"
+    end
+  else
+    authors_by_email.each do |email, names|
+      puts "#{email}: #{names.first} (aka #{names[1..-1].join(' aka ')})"
+    end
+  end
+end
+
+main if $0 == __FILE__
