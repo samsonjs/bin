@@ -1,0 +1,4 @@
+#!/bin/sh
+
+FILENAME="$1"
+git checkout $(git rev-list -n1 HEAD -- "$FILENAME")^ "$FILENAME"
