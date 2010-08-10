@@ -13,7 +13,12 @@ if ARGV.size == 1
 elsif ARGV.size == 3
   rgb = ARGV[0..2]
   red,green,blue = *rgb
-  hex = rgb.map {|n| n.to_i.to_s(16)}.join
+  if red.index '.'
+    red = (255 * red.to_f).to_i
+    green = (255 * green.to_f).to_i
+    blue = (255 * blue.to_f).to_i
+  end
+  hex = [red, green, blue].map {|n| n.to_i.to_s(16)}.join
 end
 
 puts '#' + hex
