@@ -1,0 +1,14 @@
+#!/bin/sh
+
+bail() {
+    echo fail: $*
+    exit 1
+}
+
+while ! [[ -f .publish ]]; do
+  [[ "$PWD" = "/" ]] && bail "no .publish file found"
+  cd ..
+done
+
+source .publish
+scp -r $1 $PUBLISH_HOST:$PUBLISH_DIR
