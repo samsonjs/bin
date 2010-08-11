@@ -30,7 +30,9 @@ if ! which git >/dev/null 2>&1; then
 fi
 
 cd ~
-git clone git://github.com/samsonjs/config || fail "cannot clone config repo"
+if [[ ! -d config ]]; then
+    git clone git://github.com/samsonjs/config || fail "cannot clone config repo"
+fi
 
 for FILE in config/*; do
     pushd "$HOME"
