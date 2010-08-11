@@ -15,9 +15,13 @@ if ! which zsh >/dev/null 2>&1; then
         exit 1
     fi
 fi
-#
-# FIXME figure out how to change the shell semi-interactively (only type in password)
-#chsh `which zsh`
+
+if ! grep `id -u` /etc/passwd | grep zsh; then
+    # FIXME figure out how to change the shell semi-interactively (only type in password)
+    #chsh `which zsh`
+    echo "Please chonge your shell to `which zsh`"
+    chsh
+fi
 
 if ! which git >/dev/null 2>&1; then
     if which aptitude >/dev/null 2>&1; then
