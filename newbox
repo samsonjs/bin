@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 fail() {
     echo "error: $@"
@@ -15,7 +15,6 @@ if ! which zsh >/dev/null 2>&1; then
         exit 1
     fi
 fi
-zsh
 chsh -s `which zsh`
 
 if ! which git >/dev/null 2>&1; then
