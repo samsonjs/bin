@@ -16,13 +16,6 @@ if ! which zsh >/dev/null 2>&1; then
     fi
 fi
 
-if ! grep `id -u` /etc/passwd | grep zsh; then
-    # FIXME figure out how to change the shell semi-interactively (only type in password)
-    #chsh `which zsh`
-    echo "Please chonge your shell to `which zsh`"
-    chsh
-fi
-
 if ! which git >/dev/null 2>&1; then
     if which aptitude >/dev/null 2>&1; then
         sudo aptitude install -y git-core
@@ -48,3 +41,12 @@ for FILE in config/*; do
     fi
     ln -s "$FILE" "$DOTFILE"
 done
+
+echo " * Done!"
+
+# FIXME figure out how to change the shell semi-interactively (only type in password)
+if ! grep `id -u` /etc/passwd | grep zsh; then
+    #chsh -s `which zsh`
+    echo " *** Use chsh to change your shell to `which zsh`"
+fi
+
