@@ -7,7 +7,7 @@ fail() {
 
 if ! which git >/dev/null 2>&1; then
     if which aptitude >/dev/null 2>&1; then
-        sudo aptitude install git-core
+        sudo aptitude install -y git-core
     elif which brew >/dev/null 2>&1; then
         brew install git-core
     else
