@@ -15,7 +15,9 @@ if ! which zsh >/dev/null 2>&1; then
         exit 1
     fi
 fi
-chsh -s `which zsh`
+#
+# FIXME figure out how to change the shell semi-interactively (only type in password)
+#chsh `which zsh`
 
 if ! which git >/dev/null 2>&1; then
     if which aptitude >/dev/null 2>&1; then
@@ -29,18 +31,16 @@ if ! which git >/dev/null 2>&1; then
 fi
 
 cd ~
-if [[ ! -d config ]]; then
+if ! [ -d config ]; then
     git clone git://github.com/samsonjs/config || fail "cannot clone config repo"
 fi
 
 for FILE in config/*; do
-    pushd "$HOME"
     DOTFILE=".${FILE##*/}"
-    if [[ -e "$DOTFILE" ]]; then
+    if [ -e "$DOTFILE" ]; then
         mkdir original-dot-files >/dev/null 2>/dev/null
         echo "Existing file found at $DOTFILE, moving to ~/original-dot-files."
         mv "$DOTFILE" original-dot-files/
     fi
     ln -s "$FILE" "$DOTFILE"
-    popd
 done
