@@ -5,21 +5,29 @@ bail() {
     exit 1
 }
 
+# test
+if [[ "$1" = "-t" ]]; then
+    prefix=echo
+    shift
+fi
+
 [[ "$PUBLISH_HOST" != "" ]] && [[ "$publish_host" = "" ]] && publish_host="$PUBLISH_HOST"
 [[ "$PUBLISH_DIR" != "" ]] && [[ "$publish_dir" = "" ]] && publish_dir="$PUBLISH_DIR"
 
 orig_pwd="$PWD"
-while ! [[ -f .publish ]]; do
-  [[ "$PWD" = "/" ]] && bail "no .publish file found"
-  cd ..
-done
-subdir="${PWD#$orig_pwd}"
+if [[ ! -f .publish ]]; then
+    while ! [[ -f .publish ]]; do
+        [[ "$PWD" = "/" ]] && bail "no .publish file found"
+        cd ..
+    done
+    subdir="${orig_pwd#$PWD/}"
+fi
 
 source .publish
-cd "$orig_pwd"
 
+cd $orig_pwd
 if [[ $# -eq 0 ]]; then
-    scp -r * "$publish_host":"${publish_dir}${subdir}"
+    $prefix scp -r * "$publish_host":"${publish_dir}${subdir}"
 else
-    scp "$@" "$publish_host":"${publish_dir}${subdir}"
+    $prefix scp -r "$@" "$publish_host":"${publish_dir}${subdir}"
 fi
