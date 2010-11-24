@@ -1,13 +1,5 @@
-#!/usr/bin/env ruby
+#!/bin/sh
+#
+# could be an alias but I'll leave it here anyway
 
-require 'open-uri'
-
-open('http://whatismyip.com') do |f|
-  puts "Open failed: #{f.status.inspect}" unless f.status.first == "200"
-  # <TITLE>WhatIsMyIP.com - 207.81.136.119</TITLE>
-  title = f.gets while title !~ /<TITLE>WhatIsMyIP\.com - (\d[\d.]+)</
-  ip = $1.chomp
-  ENV['SHELL'] = '/bin/bash'
-  `echo -n "#{ip}" | pbcopy`
-  puts ip
-end
+curl http://www.whatismyip.com/automation/n09230945.asp
