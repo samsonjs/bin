@@ -27,7 +27,7 @@ source .publish
 
 cd $orig_pwd
 if [[ $# -eq 0 ]]; then
-    $prefix scp -r * "$publish_host":"${publish_dir}${subdir}"
+    $prefix rsync -aKv * "$publish_host":"${publish_dir}${subdir}"
 else
-    $prefix scp -r "$@" "$publish_host":"${publish_dir}${subdir}"
+    $prefix rsync -aKv "$@" "$publish_host":"${publish_dir}${subdir}"
 fi
