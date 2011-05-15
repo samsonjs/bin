@@ -5,17 +5,34 @@ require('batteries').extendNative()
 var fs = require('fs')
   , http = require('http')
   , join = require('path').join
+  , notify = require('growl').notify
   , Downloads = join(process.env.HOME, 'Downloads')
   , created = JSON.parse(process.env.WATCH_CREATED)
   , torrents = created.grep(/.torrent$/i)
+  , skipped = []
   , _log = []
-  , log = function(s) { _log.push(s); console.log(s) }
+  , log = function(s) { s = '>>> ' + s; _log.push(s); console.log(s) }
+  , err = function(s) { s = '!!! ' + s; _log.push(s); console.error(s) }
   , writeLog = function() { fs.writeFileSync('/Users/sjs/bin/yarrr.log', _log.join('\n')) }
 
+process.on('uncaughtException', function(e) {
+  err('error: ' + e)
+  err('bailing')
+  process.exit(1)
+})
+
 torrents.forEach(function(torrent, i) {
-  log('>>> ' + torrent)
+  log(torrent)
   var path = join(Downloads, torrent)
-    , boundary = '48940923YARRRPIRATE3890457293'
+  try {
+    fs.statSync(path)
+  }
+  catch (e) {
+    skipped.push(torrent)
+    err(path + ' does not exist, skipping')
+    return
+  }
+  var boundary = '48940923YARRRPIRATE3890457293'
     , torrentData = fs.readFileSync(path, 'binary')
     , torrentSize = torrentData.length
     , data = [ '--' + boundary
@@ -44,10 +61,17 @@ torrents.forEach(function(torrent, i) {
             fs.unlink(path)
           }
           else {
-            log('!!! error ' + res.statusCode)
-            log('!!! ' + responseData)
+            err('error ' + res.statusCode)
+            err(responseData)
           }
-          if (i === torrents.length - 1) writeLog()
+          if (i === torrents.length - 1) {
+            var n = torrents.length - skipped.length
+              , s = n === 1 ? '' : 's'
+            if (n > 0) {
+              notify(n + ' torrent' + s + ' → µTorrent')
+            }
+            writeLog()
+          }
         })
       })
   log('torrent size: ' + torrentSize)
