@@ -10,5 +10,5 @@ p="$HOME/Projects/$1"
 mkdir "$p"
 cd "$p"
 git init
-touch Readme.md LICENSE
+touch Readme.md
 $VISUAL .
