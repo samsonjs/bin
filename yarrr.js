@@ -8,12 +8,12 @@ var fs = require('fs')
   , notify = require('growl').notify
   , Downloads = join(process.env.HOME, 'Downloads')
   , created = JSON.parse(process.env.WATCH_CREATED)
-  , torrents = created.grep(/.torrent$/i)
+  , torrents = created.grep(/\.torrent$/i)
   , skipped = []
   , _log = []
   , log = function(s) { s = '>>> ' + s; _log.push(s); console.log(s) }
   , err = function(s) { s = '!!! ' + s; _log.push(s); console.error(s) }
-  , writeLog = function() { fs.writeFileSync('/Users/sjs/bin/yarrr.log', _log.join('\n')) }
+  , writeLog = function() { fs.writeFileSync('/Users/sjs/log/yarrr.log', _log.join('\n')) }
 
 process.on('uncaughtException', function(e) {
   err('error: ' + e)
