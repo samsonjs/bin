@@ -30,6 +30,7 @@ fi
 cd ~
 if ! [ -d config ]; then
     git clone git://github.com/samsonjs/config || fail "cannot clone config repo"
+    git clone git://github.com/robbyrussell/oh-my-zsh.git config/oh-my-zsh
 fi
 
 for FILE in config/*; do
