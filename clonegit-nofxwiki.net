@@ -1,8 +1,0 @@
-#!/bin/sh
-
-# if no 2nd arg call again with first arg as second arg
-if [[ x"$2" = x ]]; then
-    "$0" "$1" "$1"
-else
-    git clone "ssh://nofxwiki.net/var/git/$1" "$2"
-fi
