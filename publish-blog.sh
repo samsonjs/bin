@@ -10,7 +10,7 @@ else
 fi
 
 cd _blog
-git clean -fdq
+git clean -fq
 git pull
 cd ..
 
