@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ -d ~/Projects/web/samhuri.net ]]; then
 	cd ~/Projects/web/samhuri.net
