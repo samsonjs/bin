@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-java -jar ~/apps/yuicompressor-2.4.2/build/yuicompressor-2.4.2.jar "$1" -o "$2"
+if [[ -x /usr/bin/yui-compressor ]]; then
+    exec /usr/bin/yui-compressor "$1" -o "$2"
+else
+    java -jar ~/apps/yuicompressor-2.4.2/build/yuicompressor-2.4.2.jar "$1" -o "$2"
+fi
 
