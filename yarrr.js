@@ -70,7 +70,7 @@ torrents.forEach(function(torrent, i) {
             if (n > 0) {
               notify(n + ' torrent' + s + ' → µTorrent')
             }
-            writeLog()
+            //writeLog()
           }
         })
       })
