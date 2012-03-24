@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+def main
+  output = `ls #{ARGV.map {|a| "\"#{a}\""}.join(' ')}`
+  lines = output.split("\n")
+  i = 0
+  most_commas = 0
+  number_of_commas = []
+  unchanged_line_indexes = []
+  new_lines = lines.map do |line|
+    if line =~ /^[-dl][-rwxsS]{9}[@+\s]?/
+      size = line.split[4]
+      if size =~ /^\d+$/
+        new_size = commaify(size)
+        new_line = line.sub(size, new_size)
+        n = new_size.count(',')
+        number_of_commas << n
+        most_commas = n if n > most_commas
+      end
+    end
+    unless new_line
+      unchanged_line_indexes << i
+      number_of_commas << 0
+      new_line = line
+    end
+    i += 1
+    new_line
+  end
+  new_lines.each_with_index do |line, i|
+    if line =~ /^[-dl][-rwxsS]{9}[@+\s]?/
+      size = line.split[4]
+      padded_size = (' ' * (most_commas - number_of_commas[i])) + size
+      new_lines[i] = line.sub(size, padded_size)
+    end
+  end
+  puts new_lines.join("\n")
+end
+
+def commaify(size)
+  number_with_delimiter(size)
+end
+
+def number_with_delimiter(n, delimiter = ',')
+  n.to_s.gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1#{delimiter}")
+end
+
+main if __FILE__ == $0
