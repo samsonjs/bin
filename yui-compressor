@@ -1,4 +1,4 @@
 #!/bin/bash
 
-java -jar ~/apps/yuicompressor-2.4.7.jar "$1" -o "$2"
+java -jar ~/bin/yuicompressor-2.4.7.jar "$1" -o "$2"
 
