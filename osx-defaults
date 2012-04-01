@@ -1,0 +1,87 @@
+#!/bin/sh
+
+##
+# This is script with usefull tips taken from:
+#   https://github.com/mathiasbynens/dotfiles/blob/master/.osx
+#
+
+echo " * Enable full keyboard access for all controls (e.g. enable Tab in modal dialogs)"
+defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+
+echo " * Enable subpixel font rendering on non-Apple LCDs"
+defaults write NSGlobalDomain AppleFontSmoothing -int 2
+
+echo " * Enable the 2D Dock"
+defaults write com.apple.dock no-glass -bool true
+
+echo " * Automatically hide and show the Dock"
+defaults write com.apple.dock autohide -bool true
+
+# echo " * Make Dock icons of hidden applications translucent"
+# defaults write com.apple.dock showhidden -bool true
+
+echo " * Disable menu bar transparency"
+defaults write NSGlobalDomain AppleEnableMenuBarTransparency -bool false
+
+echo " * Show all filename extensions in Finder"
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+
+echo " * Use current directory as default search scope in Finder"
+defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+
+echo " * Show Path bar in Finder"
+defaults write com.apple.finder ShowPathbar -bool true
+
+echo " * Show Status bar in Finder"
+defaults write com.apple.finder ShowStatusBar -bool true
+
+echo " * Expand save panel by default"
+defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+
+echo " * Disable the “Are you sure you want to open this application?” dialog"
+defaults write com.apple.LaunchServices LSQuarantine -bool false
+
+echo " * Disable shadow in screenshots"
+defaults write com.apple.screencapture disable-shadow -bool true
+
+echo " * Disable press-and-hold for keys in favor of key repeat"
+defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+
+echo " * Enable AirDrop over Ethernet and on unsupported Macs running Lion"
+defaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true
+
+echo " * Avoid creating .DS_Store files on network volumes"
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+
+echo " * Disable the warning when changing a file extension"
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+
+echo " * Enable snap-to-grid for desktop icons"
+/usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:arrangeBy grid" ~/Library/Preferences/com.apple.finder.plist
+
+echo " * Disable the warning before emptying the Trash"
+defaults write com.apple.finder WarnOnEmptyTrash -bool false
+
+echo " * Require password 5 seconds after sleep or screen saver begins"
+defaults write com.apple.screensaver askForPassword -int 1
+defaults write com.apple.screensaver askForPasswordDelay -int 5
+
+echo " * Enable tap to click (Trackpad)"
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+
+echo " * Enable Safari’s debug menu"
+defaults write com.apple.Safari IncludeInternalDebugMenu -bool true
+
+echo " * Add a context menu item for showing the Web Inspector in web views"
+defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
+
+echo " * Disable the Ping sidebar in iTunes"
+defaults write com.apple.iTunes disablePingSidebar -bool true
+
+echo " * Disable all the other Ping stuff in iTunes"
+defaults write com.apple.iTunes disablePing -bool true
+
+echo -n "Killing affected applications... "
+for app in Safari Finder Dock Mail SystemUIServer; do killall "$app" >/dev/null 2>&1; done
+
+echo "done!"
