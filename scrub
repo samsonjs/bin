@@ -1,0 +1,117 @@
+#!/usr/bin/env ruby
+
+require 'digest/sha1'
+require 'json'
+
+class Scrubber
+
+  class Result
+    attr_reader :status
+    attr_reader :failures
+
+    def initialize(options)
+      @status = options[:status]
+      @failures = options[:failures] || []
+    end
+
+    def ok?
+      @status == :ok
+    end
+  end
+
+  def initialize(root_dir)
+    @root_dir = File.realpath(root_dir)
+    @failures = []
+  end
+
+  def scrub(dir = @root_dir)
+    return if File.exist?(File.join(dir, 'noscrub'))
+
+    # restore hashes if already scrubbed
+    hashes =
+      if File.exist?(hash_filename(dir))
+        JSON.parse(File.read(hash_filename(dir)))
+      else
+        {}
+      end
+
+    # walk the directory
+    Dir[File.join(dir, '*')].each do |file|
+
+      # skip broken symlinks
+      next if File.symlink?(file) && !File.exist?(file)
+
+      # descend into subdirectories
+      if File.directory?(file)
+        scrub(file)
+
+      # scrub this file
+      else
+        basename = File.basename(file)
+        next if basename == 'scrub.json'
+        relative_filename = file.sub(@root_dir + '/', '')
+        hash = sha1(open(file, 'rb') { |f| f.read })
+        if expected_hash = hashes[basename]
+          unless hash == expected_hash
+            @failures << {
+              :filename => relative_filename,
+              :hash => hash,
+              :expected_hash => expected_hash
+            }
+            puts "!! #{hash} not ok: #{relative_filename}"
+          else
+            puts " * #{hash} ok: #{relative_filename}"
+          end
+        else
+          hashes[basename] = hash
+          puts " * #{hash} new: #{relative_filename}"
+        end
+      end
+    end
+
+    # persist the hashes
+    File.open(hash_filename(dir), 'w') { |f| f.puts(JSON.fast_generate(hashes)) }
+
+    # build and return our result
+    @result = Result.new(
+      :status => @failures.length == 0 ? :ok : :fail,
+      :failures => @failures
+    )
+  end
+
+  def sha1(s)
+    Digest::SHA1.hexdigest(s)
+  end
+
+  def hash_filename(dir)
+    File.join(dir, 'scrub.json')
+  end
+
+end
+
+
+def main
+  if root_dir = ARGV.shift
+    unless File.directory?(root_dir)
+      puts "error: #{root_dir} is not directory"
+      exit 1
+    end
+
+    result = Scrubber.new(root_dir).scrub
+
+    unless result.ok?
+      # report failures
+      result.failures.sort do |a,b|
+        a[:filename] <=> b[:filename]
+      end.each do |failure|
+        puts "#{failure[:filename]}: expected #{failure[:expected_hash]}, but got #{failure[:hash]}"
+      end
+      exit 1
+    end
+  else
+    puts 'Usage: scrub </your/precious/data>'
+    exit 1
+  end
+end
+
+main if $0 == __FILE__
