@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'digest/sha1'
 require 'json'
 
 class Scrubber
@@ -50,7 +49,7 @@ class Scrubber
         basename = File.basename(file)
         next if basename == 'scrub.json'
         relative_filename = file.sub(@root_dir + '/', '')
-        hash = sha1(open(file, 'rb') { |f| f.read })
+        hash = sha1(file)
         if expected_hash = hashes[basename]
           unless hash == expected_hash
             @failures << {
@@ -79,8 +78,8 @@ class Scrubber
     )
   end
 
-  def sha1(s)
-    Digest::SHA1.hexdigest(s)
+  def sha1(filename)
+    `shasum "#{filename}"`.split.first
   end
 
   def hash_filename(dir)
