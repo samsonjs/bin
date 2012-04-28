@@ -1,38 +1,39 @@
 #!/usr/bin/env ruby
 
 require 'json'
+require 'optparse'
+require 'ostruct'
 
 class Scrubber
 
-  class Result
-    attr_reader :status
-    attr_reader :failures
+  attr_reader :failures
+  attr_reader :options
+  attr_reader :root_dir
+  attr_reader :status
 
-    def initialize(options)
-      @status = options[:status]
-      @failures = options[:failures] || []
-    end
-
-    def ok?
-      @status == :ok
-    end
+  def self.scrub(root_dir, options = {})
+    new(root_dir, options).scrub
   end
 
-  def initialize(root_dir)
-    @root_dir = File.realpath(root_dir)
+  def initialize(root_dir, options = {})
     @failures = []
+    @options = options
+    @root_dir = File.realpath(root_dir)
+    @status = :ok
   end
 
   def scrub(dir = @root_dir)
-    return if File.exist?(File.join(dir, 'noscrub'))
+    hash_file = hashes_filename(dir)
+    if File.exist?(File.join(dir, 'noscrub'))
+      if File.exists?(hash_file)
+        File.unlink(hash_file)
+      end
+      return self
+    end
 
     # restore hashes if already scrubbed
-    hashes =
-      if File.exist?(hash_filename(dir))
-        JSON.parse(File.read(hash_filename(dir)))
-      else
-        {}
-      end
+    expected_hashes = hashes(dir)
+    new_hashes = {}
 
     # walk the directory
     Dir[File.join(dir, '*')].each do |file|
@@ -47,68 +48,133 @@ class Scrubber
       # scrub this file
       else
         basename = File.basename(file)
+        expected_hash = expected_hashes[basename]
         next if basename == 'scrub.json'
+        if options.skip_existing && expected_hash
+          new_hashes[basename] = expected_hash
+          next
+        end
         relative_filename = file.sub(@root_dir + '/', '')
-        hash = sha1(file)
-        if expected_hash = hashes[basename]
-          unless hash == expected_hash
-            @failures << {
-              :filename => relative_filename,
-              :hash => hash,
-              :expected_hash => expected_hash
-            }
-            puts "!! #{hash} not ok: #{relative_filename}"
-          else
-            puts " * #{hash} ok: #{relative_filename}"
-          end
-        else
-          hashes[basename] = hash
-          puts " * #{hash} new: #{relative_filename}"
+        result, hash = scrub_file(file, expected_hash)
+        case result
+        when :ok
+          new_hashes[basename] = hash
+          puts "[ok]   #{hash} - #{relative_filename}" if options.verbose
+        when :new
+          new_hashes[basename] = hash
+          puts "[new]  #{hash} - #{relative_filename}" if options.verbose
+        when :fail
+          @failures << {
+            :filename => relative_filename,
+            :hash => hash,
+            :expected_hash => expected_hash
+          }
+          @status = :fail
+          puts "[FAIL] #{hash} - #{relative_filename} (previously had sha #{expected_hash})"
         end
       end
     end
 
-    # persist the hashes
-    File.open(hash_filename(dir), 'w') { |f| f.puts(JSON.fast_generate(hashes)) }
+    write_hashes(dir, new_hashes)
+    self
+  end
 
-    # build and return our result
-    @result = Result.new(
-      :status => @failures.length == 0 ? :ok : :fail,
-      :failures => @failures
-    )
+  # Returns 
+  def scrub_file(file, expected_hash)
+    basename = File.basename(file)
+    hash = sha1(file)
+    result =
+      if hash == expected_hash
+        result = :ok
+      elsif expected_hash
+        result = :fail
+      else
+        result = :new
+      end
+    [result, hash]
+  end
+
+  def ok?
+    @status == :ok
+  end
+
+  def fail?
+    @status == :fail
   end
 
   def sha1(filename)
-    `shasum "#{filename}"`.split.first
+    `zsh -c "noglob shasum \\\"#{filename}\\\""`.split.first
   end
 
-  def hash_filename(dir)
+  def hashes_filename(dir)
     File.join(dir, 'scrub.json')
+  end
+
+  def hashes(dir)
+    f = hashes_filename(dir)
+    if File.exist?(f)
+      JSON.parse(File.read(f))
+    else
+      {}
+    end
+  end
+
+  def write_hashes(dir, hashes)
+    return if options.phantom
+    f = hashes_filename(dir)
+    if hashes.size > 0
+      File.open(f, 'w') { |f| f.puts(JSON.fast_generate(hashes)) }
+    elsif File.exists?(f)
+      File.unlink(f)
+    end
   end
 
 end
 
-
 def main
-  if root_dir = ARGV.shift
-    unless File.directory?(root_dir)
-      puts "error: #{root_dir} is not directory"
-      exit 1
-    end
+  options = OpenStruct.new
+  options.phantom = false
+  options.skip_existing = false
+  options.verbose = false
 
-    result = Scrubber.new(root_dir).scrub
-
-    unless result.ok?
-      # report failures
-      result.failures.sort do |a,b|
-        a[:filename] <=> b[:filename]
-      end.each do |failure|
-        puts "#{failure[:filename]}: expected #{failure[:expected_hash]}, but got #{failure[:hash]}"
-      end
-      exit 1
+  OptionParser.new do |opts|
+    opts.banner = 'Usage: scrub [options] <root-directory>'
+    opts.on('-h', '--help', 'Show this help') do
+      puts opts
+      exit
     end
-  else
-    puts 'Usage: scrub </your/precious/data>'
+    opts.on('-p', '--phantom', 'Do everything except write scrub.json files. Useful for testing.') do
+      options.phantom = true
+    end
+    opts.on('-s', '--skip-existing', 'Only calculate new checksums, skipping files with existing hashes') do
+      options.skip_existing = true
+    end
+    opts.on('-v', '--verbose', 'Log every file that is checked') do
+      options.verbose = true
+    end
+  end.parse!
+
+  root_dir = ARGV.shift || '.'
+  unless File.directory?(root_dir)
+    puts "error: #{root_dir} is not directory"
+    exit 1
+  end
+
+  result = Scrubber.scrub(root_dir, options)
+
+  # TODO print a summary
+
+  # Failures may have been lost in the noise so report them at the
+  # end as well when -v is given.
+  if result.fail? && options.verbose
+    puts
+    puts "*** Failures:"
+    # report failures
+    result.failures.sort do |a,b|
+      a[:filename] <=> b[:filename]
+    end.each do |failure|
+      puts "#{failure[:filename]}: expected #{failure[:expected_hash]}, but got #{failure[:hash]}"
+    end
     exit 1
   end
 end
