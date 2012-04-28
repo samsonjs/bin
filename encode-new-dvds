@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+SourceDir = '/Volumes/Atlas/DVD/Movies'
+DestDir = '/Volumes/Atlas/Purchased/Movies'
+
+def quote(s)
+  '"' + s.gsub(/(["$`])/, '\\\\\1') + '"'
+end
+
+def files_to_encode
+  files = Dir[File.join(SourceDir, '*')].inject({}) do |files, source|
+    basename = File.basename(source)
+    unless basename == 'scrub.json' || File.exists?(File.join(source, 'noencode'))
+      outname = basename.sub(/\.dvdmedia$/, '').sub(/Disc/, 'Part')
+      dest = File.join(DestDir, outname) + '.m4v'
+      files[source] = dest
+    end
+    files
+  end
+
+  # If only one disc is to be encoded strip the "(Part X of Y)" suffix.
+  # Otherwise make sure the # of parts matches how many are actually encoded.
+  sources = files.keys
+  sources.grep(/^.*\(Disc\s/).each do |source|
+    prefix = source.match(/^(.*)\(Disc\s/)[1]
+    parts = sources.select { |source| source[prefix] }
+    if parts.length == 1
+      files[source].sub!(/\s\(Part[^)]+\)/, '')
+    else
+      parts.each do |source|
+        files[source].sub!(/Part (\d) of \d/, "Part \\1 of #{parts.length}")
+      end
+    end
+  end
+
+  files
+end
+
+def main
+  files_to_encode.each do |source, dest|
+    if File.exists?(dest)
+      puts "#{source} -> #{dest} (skipped, exists)"
+    else
+      puts "#{source} -> #{dest}"
+      `encode #{quote(source)} #{quote(dest)}`
+    end
+  end
+end
+
+main if $0 == __FILE__
