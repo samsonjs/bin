@@ -32,15 +32,9 @@ if ! [ -d config ]; then
     git clone git://github.com/samsonjs/config || fail "cannot clone config repo"
 fi
 
-for FILE in config/*; do
-    DOTFILE=".${FILE##*/}"
-    if [ -e "$DOTFILE" ]; then
-        mkdir original-dot-files >/dev/null 2>/dev/null
-        echo "Existing file found at $DOTFILE, moving to ~/original-dot-files."
-        mv "$DOTFILE" original-dot-files/
-    fi
-    ln -s "$FILE" "$DOTFILE"
-done
+cd config
+./init.sh
+cd ..
 
 echo " * Done!"
 
