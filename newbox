@@ -11,8 +11,7 @@ if ! which zsh >/dev/null 2>&1; then
     elif which brew >/dev/null 2>&1; then
         brew install zsh
     else
-        echo "Don't know how to install zsh on this box. Install zsh and run this again."
-        exit 1
+        fail "Don't know how to install zsh on this box. Install zsh and run this again."
     fi
 fi
 
@@ -22,8 +21,7 @@ if ! which git >/dev/null 2>&1; then
     elif which brew >/dev/null 2>&1; then
         brew install git-core
     else
-        echo "Don't know how to install git on this box. Install git and run this again."
-        exit 1
+        fail "Don't know how to install git on this box. Install git and run this again."
     fi
 fi
 
