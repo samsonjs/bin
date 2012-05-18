@@ -103,7 +103,8 @@ class Scrubber
   end
 
   def sha1(filename)
-    `zsh -c "noglob shasum \\\"#{filename}\\\""`.split.first
+    # holy quoting batman!
+    `shasum "#{filename.gsub(/(\$)/, '\\\\\\1')}"`.split.first
   end
 
   def hashes_filename(dir)
