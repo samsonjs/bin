@@ -64,6 +64,8 @@ class Scrubber
           new_hashes[basename] = hash
           puts "[new]  #{hash} - #{relative_filename}" if options.verbose
         when :fail
+          # no change in scrub.json, just report the new sha
+          new_hashes[basename] = expected_hash
           @failures << {
             :filename => relative_filename,
             :hash => hash,
