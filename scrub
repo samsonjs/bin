@@ -23,17 +23,17 @@ class Scrubber
   end
 
   def scrub(dir = @root_dir)
-    hash_file = hashes_filename(dir)
+    scrub_file = scrub_filename(dir)
     if File.exist?(File.join(dir, 'noscrub'))
-      if File.exists?(hash_file)
-        File.unlink(hash_file)
+      if File.exists?(scrub_file)
+        File.unlink(scrub_file)
       end
       return self
     end
 
-    # restore hashes if already scrubbed
-    expected_hashes = hashes(dir)
-    new_hashes = {}
+    # restore file records if already scrubbed
+    existing_file_records = file_records(dir)
+    new_file_records = {}
 
     # walk the directory
     Dir[File.join(dir, '*')].each do |file|
@@ -48,40 +48,51 @@ class Scrubber
       # scrub this file
       else
         basename = File.basename(file)
-        expected_hash = expected_hashes[basename]
         next if basename == 'scrub.json'
-        if options.skip_existing && expected_hash
-          new_hashes[basename] = expected_hash
+        file_record = existing_file_records[basename] || {}
+        # convert old scrub.json records
+        if file_record.is_a?(String)
+          puts ">>> converting #{file} in #{scrub_filename(dir)} to new disk format" if options.verbose
+          # even out the scrubbing load throughout the month
+          random_timestamp = Time.now.to_i - (rand(30) * 86400)
+          file_record = { 'hash' => file_record, 'timestamp' => random_timestamp }
+        end
+        last_scrubbed = file_record['timestamp'] || 0
+        # skip files scrubbed in the last 30 days, unless --all was given
+        if !options.all && last_scrubbed >= Time.now.to_i - (30 * 86400)
+          puts ">>> skipping #{file} as it has been scrubbed recently (#{Time.at(last_scrubbed)})" if options.verbose
+          new_file_records[basename] = file_record
           next
         end
         relative_filename = file.sub(@root_dir + '/', '')
-        result, hash = scrub_file(file, expected_hash)
+        result, hash = scrub_file(file, file_record['hash'])
         case result
         when :ok
-          new_hashes[basename] = hash
+          file_record['hash'] = hash
           puts "[ok]   #{hash} - #{relative_filename}" if options.verbose
         when :new
-          new_hashes[basename] = hash
+          file_record['hash'] = hash
           puts "[new]  #{hash} - #{relative_filename}" if options.verbose
         when :fail
           # no change in scrub.json, just report the new sha
-          new_hashes[basename] = expected_hash
           @failures << {
             :filename => relative_filename,
             :hash => hash,
-            :expected_hash => expected_hash
+            :expected_hash => file_record['hash']
           }
           @status = :fail
           puts "[FAIL] #{hash} - #{relative_filename} (previously had sha #{expected_hash})"
         end
+        file_record['timestamp'] = Time.now.to_i
+        new_file_records[basename] = file_record
       end
     end
 
-    write_hashes(dir, new_hashes)
+    write_file_records(dir, new_file_records)
     self
   end
 
-  # Returns 
+  # Returns
   def scrub_file(file, expected_hash)
     basename = File.basename(file)
     hash = sha1(file)
@@ -109,12 +120,12 @@ class Scrubber
     `shasum "#{filename.gsub(/(\$)/, '\\\\\\1')}"`.split.first
   end
 
-  def hashes_filename(dir)
+  def scrub_filename(dir)
     File.join(dir, 'scrub.json')
   end
 
-  def hashes(dir)
-    f = hashes_filename(dir)
+  def file_records(dir)
+    f = scrub_filename(dir)
     if File.exist?(f)
       JSON.parse(File.read(f))
     else
@@ -122,11 +133,11 @@ class Scrubber
     end
   end
 
-  def write_hashes(dir, hashes)
+  def write_file_records(dir, records)
     return if options.phantom
-    f = hashes_filename(dir)
-    if hashes.size > 0
-      File.open(f, 'w') { |f| f.puts(JSON.fast_generate(hashes)) }
+    f = scrub_filename(dir)
+    if records.size > 0
+      File.open(f, 'w') { |f| f.puts(JSON.fast_generate(records)) }
     elsif File.exists?(f)
       File.unlink(f)
     end
@@ -136,21 +147,21 @@ end
 
 def main
   options = OpenStruct.new
+  options.all = false
   options.phantom = false
-  options.skip_existing = false
   options.verbose = false
 
   OptionParser.new do |opts|
     opts.banner = 'Usage: scrub [options] <root-directory>'
+    opts.on('-a', '--all', 'Scrub all files no matter when they were last scrubbed.') do
+      options.all = true
+    end
     opts.on('-h', '--help', 'Show this help') do
       puts opts
       exit
     end
     opts.on('-p', '--phantom', 'Do everything except write scrub.json files. Useful for testing.') do
       options.phantom = true
-    end
-    opts.on('-s', '--skip-existing', 'Only calculate new checksums, skipping files with existing hashes') do
-      options.skip_existing = true
     end
     opts.on('-v', '--verbose', 'Log every file that is checked') do
       options.verbose = true
