@@ -6,7 +6,6 @@ def main
   i = 0
   most_commas = 0
   number_of_commas = []
-  unchanged_line_indexes = []
   new_lines = lines.map do |line|
     if line =~ /^[-dl][-rwxsS]{9}[@+\s]?/
       size = line.split[4]
@@ -19,7 +18,6 @@ def main
       end
     end
     unless new_line
-      unchanged_line_indexes << i
       number_of_commas << 0
       new_line = line
     end
