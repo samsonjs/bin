@@ -19,6 +19,7 @@ elsif ARGV.size == 3
   rgb = ARGV[0..2]
   red,green,blue = *rgb
   if red.index '.'
+    redf, greenf, bluef = red, green, blue
     red = (255 * red.to_f).to_i
     green = (255 * green.to_f).to_i
     blue = (255 * blue.to_f).to_i
@@ -26,6 +27,10 @@ elsif ARGV.size == 3
   hex = [red, green, blue].map {|n| to_hex(n) }.join
 end
 
+redf ||= red.to_f / 255
+greenf ||= green.to_f / 255
+bluef ||=  blue.to_f / 255
+
 puts '#' + hex
 puts "RGB (#{red}, #{green}, #{blue})"
-puts "Red:#{red.to_f/255} green:#{green.to_f/255} blue:#{blue.to_f/255}"
+puts "Red:#{redf} green:#{greenf} blue:#{bluef}"
