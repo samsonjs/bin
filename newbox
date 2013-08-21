@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e # bail on errors
+
 fail() {
   echo "error: $@"
   exit 1
@@ -25,7 +27,7 @@ install() {
 
 }
 
-install zsh git
+install zsh git || fail "Failed to install zsh & git."
 
 cd ~
 if ! [[ -d config ]]; then
