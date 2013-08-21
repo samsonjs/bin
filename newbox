@@ -1,33 +1,35 @@
 #!/usr/bin/env bash
 
 fail() {
-    echo "error: $@"
-    exit 1
+  echo "error: $@"
+  exit 1
 }
 
-if ! which zsh >/dev/null 2>&1; then
-    if which aptitude >/dev/null 2>&1; then
-        sudo aptitude install -y zsh
-    elif which brew >/dev/null 2>&1; then
-        brew install zsh
-    else
-        fail "Don't know how to install zsh on this box. Install zsh and run this again."
-    fi
-fi
+install() {
 
-if ! which git >/dev/null 2>&1; then
-    if which aptitude >/dev/null 2>&1; then
-        sudo aptitude install -y git-core
-    elif which brew >/dev/null 2>&1; then
-        brew install git-core
-    else
-        fail "Don't know how to install git on this box. Install git and run this again."
-    fi
-fi
+  # apt (debian / ubuntu)
+  if which aptitude >/dev/null 2>&1; then
+    sudo aptitude install -y "$@"
+
+  # homebrew (os x)
+  elif which brew >/dev/null 2>&1; then
+    brew install "$@"
+
+  # rpm (redhat / centos / fedora)
+  elif which yum >/dev/null 2>&1; then
+    sudo yum install -y "$@"
+
+  else
+    fail "Don't know how to install $@ on this box. Install $@ and run this again."
+  fi
+
+}
+
+install zsh git
 
 cd ~
-if ! [ -d config ]; then
-    git clone git://github.com/samsonjs/config || fail "cannot clone config repo"
+if ! [[ -d config ]]; then
+  git clone git://github.com/samsonjs/config || fail "cannot clone config repo"
 fi
 
 cd config
@@ -38,7 +40,7 @@ echo " * Done!"
 
 # FIXME figure out how to change the shell semi-interactively (only type in password)
 if ! grep `id -u` /etc/passwd | grep zsh; then
-    #chsh -s `which zsh`
-    echo " *** Use chsh to change your shell to `which zsh`"
+  #chsh -s `which zsh`
+  echo " *** Use chsh to change your shell to `which zsh`"
 fi
 
