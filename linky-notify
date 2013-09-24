@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'shellwords'
+
+def e(s)
+  Shellwords.escape(s)
+end
+
+def main
+  dir = ENV['WATCH_DIR']
+  created = JSON.parse(ENV['WATCH_CREATED'])
+  created.each do |filename|
+    path = File.join(dir, filename)
+    title, url, _ = File.readlines(path).map(&:strip)
+    output = `/Users/sjs/.rbenv/shims/terminal-notifier -title #{e(title)} -message #{e(url)} -open #{e(url)} 2>&1`
+    unless $?.success?
+      exit 1
+    end
+    File.rename(path, File.join(dir, 'Archive', filename))
+  end
+end
+
+main if $0 == __FILE__
