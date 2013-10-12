@@ -7,27 +7,40 @@ fail() {
   exit 1
 }
 
+function command_exists() {
+  which "$1" >/dev/null 2>/dev/null
+}
+
 install() {
 
+  if command_exists "$1"; then
+    return
+  fi
+
   # apt (debian / ubuntu)
-  if which aptitude >/dev/null 2>&1; then
-    sudo aptitude install -y "$@"
+  if command_exists aptitude; then
+    sudo aptitude install -y "$1"
 
   # homebrew (os x)
-  elif which brew >/dev/null 2>&1; then
-    brew install "$@"
+  elif command_exists brew; then
+    brew install "$1"
 
   # rpm (redhat / centos / fedora)
-  elif which yum >/dev/null 2>&1; then
-    sudo yum install -y "$@"
+  elif command_exists yum; then
+    sudo yum install -y "$1"
+
+  # arch
+  elif command_exists pacman; then
+    sudo pacman -S "$1"
 
   else
-    fail "Don't know how to install $@ on this box. Install $@ and run this again."
+    fail "Don't know how to install $1 on this box. Install $1 and run this again."
   fi
 
 }
 
-install zsh git || fail "Failed to install zsh & git."
+install zsh || fail "Failed to install zsh."
+install git || fail "Failed to install git."
 
 cd ~
 if ! [[ -d config ]]; then
