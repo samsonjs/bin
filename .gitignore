@@ -12,8 +12,8 @@ ruby*
 testrb*
 jruby*
 rbx*
-mysql-update
-redis-update
+mysql-update*
+redis-update*
 sbt
 sbt-launch.jar
 subl
