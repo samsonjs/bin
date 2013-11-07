@@ -1,0 +1,20 @@
+#!/bin/bash
+
+AS_GET_TITLE='
+  tell application "Google Chrome"
+    set frontIndex to active tab index of front window
+    get title of tab frontIndex of front window
+  end tell
+'
+
+AS_GET_URL='
+  tell application "Google Chrome"
+    set frontIndex to active tab index of front window
+    get URL of tab frontIndex of front window
+  end tell
+'
+
+TITLE=`osascript - <<<"$AS_GET_TITLE"`
+URL=`osascript - <<<"$AS_GET_URL"`
+
+~/bin/add-to-reading-list "$TITLE" "$URL"
