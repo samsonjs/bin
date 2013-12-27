@@ -2,23 +2,61 @@
 
 require 'json'
 require 'shellwords'
+require 'time'
+
+DEBUG = false
+
+def log_file
+  @log_file ||= begin
+    at_exit { log_file.close }
+    File.open('/Users/sjs/linky-notify.log', 'a')
+  end
+end
+
+def log(line)
+  log_file.puts(line) if DEBUG
+end
+
+def munge_invalid_encoding(s)
+  s.chars.map { |c| c >= "\0" && c <= "\176" ? c : '?' }.join
+end
 
 def e(s)
+  if !s.valid_encoding?
+    puts "forcing encoding of #{s.inspect}"
+    s = s.force_encoding('UTF-8')
+    if !s.valid_encoding?
+      puts "munging #{s.inspect}"
+      s = munge_invalid_encoding(s)
+    end
+    puts "s is now #{s.inspect}"
+  end
   Shellwords.escape(s)
+end
+
+def notify_command(title, url)
+  "/Users/sjs/.rbenv/shims/terminal-notifier -title #{e(title)} -message #{e(url)} -open #{e(url)} -sender com.apple.Terminal 2>&1"
 end
 
 def main
   dir = ENV['WATCH_DIR']
   created = JSON.parse(ENV['WATCH_CREATED'])
+  log "dir = #{dir}"
+  log "created = #{created.inspect}"
   created.each do |filename|
     path = File.join(dir, filename)
     title, url, _ = File.readlines(path).map(&:strip)
-    output = `/Users/sjs/.rbenv/shims/terminal-notifier -title #{e(title)} -message #{e(url)} -open #{e(url)} 2>&1`
+    command = notify_command(title, url)
+    log "[#{Time.now.iso8601}] #{command}"
+    output = `#{command}`
     unless $?.success?
       exit 1
     end
     File.rename(path, File.join(dir, 'Archive', filename))
   end
+rescue Exception => e
+  log "#{e.class}: #{e.message}"
+  log e.backtrace.join("\n")
 end
 
 main if $0 == __FILE__
