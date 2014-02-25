@@ -45,14 +45,31 @@ def main
   log "created = #{created.inspect}"
   created.each do |filename|
     path = File.join(dir, filename)
-    title, url, _ = File.readlines(path).map(&:strip)
-    command = notify_command(title, url)
-    log "[#{Time.now.iso8601}] #{command}"
-    output = `#{command}`
-    unless $?.success?
-      exit 1
+    lines = File.readlines(path).map(&:strip)
+    title, url = nil, nil
+    until (title && url) || lines.empty?
+      line = lines.shift
+      next if line == ''
+
+      if line =~ /^http/
+        url ||= line
+      else
+        title ||= line
+      end
     end
-    File.rename(path, File.join(dir, 'Archive', filename))
+    if url
+      command = notify_command(title || url, url)
+      log "[#{Time.now.iso8601}] #{command}"
+      output = `#{command}`
+      unless $?.success?
+        exit 1
+      end
+      archive_dir = File.join(dir, 'Archive')
+      Dir.mkdir(archive_dir) unless File.exists?(archive_dir)
+      File.rename(path, File.join(archive_dir, filename))
+    else
+      log "[#{Time.now.iso8601}] Failed to find URL in #{filename}: #{File.read(path)}"
+    end
   end
 rescue Exception => e
   log "#{e.class}: #{e.message}"
