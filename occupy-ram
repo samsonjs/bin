@@ -16,4 +16,4 @@ until free < 100_000
   puts "Occupied #{n} MB, #{(4096 * free / mega).round(2)} MB still free"
 end
 puts 'full, looping forever...'
-a.each { |s| s =~ /foo/ } while true
+loop { sleep 1 }

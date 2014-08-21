@@ -1,0 +1,78 @@
+#!/usr/bin/env ruby
+
+require 'cgi'
+require 'faraday'
+require 'rack'
+require 'uri'
+
+def main
+  while youtube_url = ARGV.shift
+    puts ">>> Snarfing audio from #{youtube_url}..."
+    if YouTubeSnarfer.snarf(youtube_url)
+      sleep 60
+    end
+  end
+end
+
+class YouTubeSnarfer
+
+  attr_reader :url, :video_filename
+
+  def self.snarf(url)
+    new(url).snarf
+  end
+
+  def initialize(url)
+    @url = url
+    unless @url =~ /^http/
+      @url = "http://youtube.com/watch?v=#{@url}"
+    end
+  end
+
+  def snarf
+    encode_audio
+  end
+
+  def title
+    video_filename.sub(/\s*-\w+.mp4\s*$/, '')
+  end
+
+  def audio_filename
+    "#{title}.m4a"
+  end
+
+  def encode_audio
+    save_video
+    if File.exists?(audio_filename)
+      puts ">>> Skipping, #{audio_filename} already exists. Delete it if you want to re-extract the audio."
+      return false
+    end
+    cmd = "ffmpeg -i '#{video_filename}' -vn -acodec copy '#{audio_filename}'"
+    IO.popen(cmd) do |io|
+      io.each_line do |line|
+        puts line
+      end
+    end
+    true
+  end
+
+  def save_video
+    IO.popen("youtube-dl #{url}") do |io|
+      io.each_line do |line|
+        puts line
+
+        if line =~ /^\[download\] /
+          @video_filename =
+            if line =~ /Destination:/
+              line.split(': ').last
+            else
+              line.sub('[download] ', '').sub(' has already been downloaded', '')
+            end.sub(/[\s\r\n]*$/, '')
+        end
+      end
+    end
+  end
+
+end
+
+main if $0 == __FILE__
