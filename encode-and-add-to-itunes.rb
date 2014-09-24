@@ -5,9 +5,18 @@ require 'fileutils'
 ADD_TO_ITUNES_DIR = File.expand_path('~/Music/iTunes/iTunes Media/Automatically Add to iTunes.localized')
 
 def main
-  root_dir = ENV['TR_TORRENT_DIR'] || ARGV.shift
+  root_dir =
+    if ENV['TR_TORRENT_DIR']
+      File.join(ENV['TR_TORRENT_DIR'], ENV['TR_TORRENT_NAME'])
+    else
+      ARGV.shift
+    end
+
   if File.exists?(root_dir)
-    puts "* Encoding files in #{root_dir}"
+    puts "* Looking for archives in #{root_dir}..."
+    extract_archives(root_dir)
+
+    puts "* Encoding files in #{root_dir}..."
     encode_and_add_to_itunes(root_dir)
   elsif root_dir
     puts "file not found: #{root_dir}"
@@ -15,6 +24,22 @@ def main
   else
     puts "error: expected directory in environment variable TR_TORRENT_DIR or as first argument"
     exit 2
+  end
+end
+
+def extract_archives(dir)
+  Dir.foreach(dir) do |filename|
+    next if filename == '.' || filename == '..'
+    path = File.join(dir, filename)
+    if File.directory?(path)
+      extract_archives(path)
+    elsif filename =~ /\.rar$/
+      pwd = Dir.pwd
+      Dir.chdir(dir)
+      puts "* Extracting #{filename}..."
+      `unrar x '#{filename}'`
+      Dir.chdir(pwd)
+    end
   end
 end
 
