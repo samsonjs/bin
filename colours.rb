@@ -18,7 +18,7 @@ if ARGV.size == 1
 elsif ARGV.size == 3
   rgb = ARGV[0..2]
   red,green,blue = *rgb
-  if red.index '.'
+  if red.index('.') || green.index('.') || blue.index('.')
     redf, greenf, bluef = red, green, blue
     red = (255 * red.to_f).to_i
     green = (255 * green.to_f).to_i
