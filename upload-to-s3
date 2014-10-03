@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+filename=$(basename "$1")
+s3cmd put "$1" s3://static.samhuri.net/"$filename"
+ruby -rerb -e "print 'http://static.samhuri.net/' + ERB::Util.url_encode('$filename')" | pbcopy
