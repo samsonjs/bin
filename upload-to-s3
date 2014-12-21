@@ -6,8 +6,6 @@ function filesize() {
   stat "$1" | cut -d' ' -f8
 }
 
-touch ~/wtf
-
 big_size=$((512 * 1024))
 max_size=$((2 * 1024 * 1024))
 
@@ -31,6 +29,6 @@ if [[ $(filesize "$img_path") -gt $big_size ]]; then
   fi
 fi
 filename=$(basename "$img_path")
-# s3cmd put "$img_path" s3://static.samhuri.net/"$filename"
+s3cmd put "$img_path" s3://static.samhuri.net/"$filename"
 ruby -rerb -e "puts 'http://static.samhuri.net/' + ERB::Util.url_encode('$filename')"
 ruby -rerb -e "print 'http://static.samhuri.net/' + ERB::Util.url_encode('$filename')" | pbcopy
