@@ -1,5 +1,36 @@
 #!/bin/zsh
 
-filename=$(basename "$1")
-s3cmd put "$1" s3://static.samhuri.net/"$filename"
+set -e # bail on errors
+
+function filesize() {
+  stat "$1" | cut -d' ' -f8
+}
+
+touch ~/wtf
+
+big_size=$((512 * 1024))
+max_size=$((2 * 1024 * 1024))
+
+img_path="$1"
+ls -lh "$img_path"
+if [[ $(filesize "$img_path") -gt $big_size ]]; then
+  echo "BIG, HALVING"
+  convert -resize "50%" "$img_path" "$img_path"
+  ls -lh "$img_path"
+  if [[ $(filesize "$img_path") -gt $big_size ]]; then
+    echo "STILL BIG, CLAMPING TO 2560x1440"
+    convert -resize "2560x1440>" "$img_path" "$img_path"
+    ls -lh "$img_path"
+    if [[ $(filesize "$img_path") -gt $max_size ]]; then
+      echo "HUGE, CONVERTING TO JPEG (75% QUALITY)"
+      new_img_path="${img_path%.png}.jpg"
+      convert -quality 75 "$img_path" "$new_img_path"
+      img_path="$new_img_path"
+      ls -lh "$img_path"
+    fi
+  fi
+fi
+filename=$(basename "$img_path")
+# s3cmd put "$img_path" s3://static.samhuri.net/"$filename"
+ruby -rerb -e "puts 'http://static.samhuri.net/' + ERB::Util.url_encode('$filename')"
 ruby -rerb -e "print 'http://static.samhuri.net/' + ERB::Util.url_encode('$filename')" | pbcopy
