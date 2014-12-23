@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'huemote'
+
+LIGHT_NAMES = ['Office 1', 'Office 2']
+TEMPS = {
+  'bright'    => 4200,
+  'cloudy'    => 3500,
+  'sunrise'   => 2200,
+  'morning'   => 2600,
+  'noon'      => 4200,
+  'sunset'    => 2600,
+  'night'     => 2200,
+}
+TEMPS['sunny'] = TEMPS['bright']
+TEMPS['overcast'] = TEMPS['cloudy']
+
+setting = ARGV.first
+Huemote.set_ip '192.168.0.2'
+lights = LIGHT_NAMES.map { |name| Huemote::Light.find(name) }
+
+case setting
+when 'off'
+  lights.each(&:off!)
+when 'on'
+  lights.each(&:on!)
+else
+  lights.each(&:on!)
+  temp = TEMPS[setting] || setting.to_i
+  if temp > 0
+    lights.each { |l| l.kelvin(temp) }
+  else
+    puts "Unknown setting: #{setting}"
+  end
+end
