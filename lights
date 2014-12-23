@@ -36,9 +36,15 @@ TEMPS = {
 TEMPS['sunny'] = TEMPS['bright']
 TEMPS['overcast'] = TEMPS['cloudy']
 
-setting = ARGV.first
+setting = ARGV[0]
+brightness = ARGV[1] || 80
+transition = ARGV[2]
 Huemote.set_ip '192.168.0.2'
 lights = LIGHT_NAMES.map { |name| Huemote::Light.find(name) }
+
+def kelvin_to_mireds(temp)
+  [[1_000_000 / temp, 154].max, 500].min
+end
 
 case setting
 when 'off'
@@ -48,17 +54,20 @@ when 'on'
 else
   lights.each(&:on!)
   attrs = TEMPS[setting] || {
-    brightness: (ARGV[1] || 80).to_i,
     temp: setting.to_i,
+    brightness: brightness.to_i,
   }
+  if transition
+    # tenths of a second
+    attrs[:transitiontime] = transition.to_i
+  end
   if attrs
+    attrs[:bri] = attrs.delete(:brightness)
+    if attrs[:temp]
+      attrs[:ct] = kelvin_to_mireds(attrs.delete(:temp))
+    end
     lights.each do |l|
-      if attrs[:brightness]
-        l.brightness(attrs[:brightness])
-      end
-      if attrs[:temp]
-        l.kelvin(attrs[:temp])
-      end
+      l.send(:set!, attrs)
     end
   else
     puts "Unknown setting: #{setting}"
