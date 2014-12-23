@@ -5,31 +5,31 @@ require 'huemote'
 LIGHT_NAMES = ['Office 1', 'Office 2']
 TEMPS = {
   'bright' => {
-    brightness: 100,
+    brightness: 254,
     temp: 4200,
   },
   'cloudy' => {
-    brightness: 90,
+    brightness: 200,
     temp: 3500,
   },
   'sunrise' => {
-    brightness: 70,
-    temp: 2600,
-  },
-  'morning' => {
-    brightness: 90,
+    brightness: 180,
     temp: 2200,
   },
+  'morning' => {
+    brightness: 220,
+    temp: 2600,
+  },
   'noon' => {
-    brightness: 100,
+    brightness: 254,
     temp: 4200,
   },
   'sunset' => {
-    brightness: 90,
+    brightness: 210,
     temp: 2600,
   },
   'night' => {
-    brightness: 70,
+    brightness: 160,
     temp: 2200,
   },
 }
@@ -37,7 +37,7 @@ TEMPS['sunny'] = TEMPS['bright']
 TEMPS['overcast'] = TEMPS['cloudy']
 
 setting = ARGV[0]
-brightness = ARGV[1] || 80
+brightness = ARGV[1] || 220
 transition = ARGV[2]
 Huemote.set_ip '192.168.0.2'
 lights = LIGHT_NAMES.map { |name| Huemote::Light.find(name) }
