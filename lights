@@ -57,14 +57,14 @@ else
     temp: setting.to_i,
     brightness: brightness.to_i,
   }
-  if transition
-    # tenths of a second
-    attrs[:transitiontime] = transition.to_i
-  end
   if attrs
     attrs[:bri] = attrs.delete(:brightness)
     if attrs[:temp]
       attrs[:ct] = kelvin_to_mireds(attrs.delete(:temp))
+    end
+    if transition
+      # tenths of a second
+      attrs[:transitiontime] = transition.to_i
     end
     lights.each do |l|
       l.send(:set!, attrs)
