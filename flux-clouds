@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby 
+
+require 'forecast_io'
+require 'json'
+
+ForecastIO.api_key = JSON.parse(File.read(File.expand_path('~/Dropbox/Personal/forecastio.json', __FILE__)))['apikey']
+
+LATITUDE = 48.456642
+LONGITUDE = -123.370325
+
+def main
+  if forecast = ForecastIO.forecast(LATITUDE, LONGITUDE)
+    cloud_cover = forecast.currently.cloudCover
+    puts "Cloud cover: #{cloud_cover}"
+    setting = cloud_cover > 0.6 ? 'cloudy' : 'sunny'
+    # File.open('/Users/sjs/flux-clouds.log', 'a') { |f| f.puts "Cloud cover: #{cloud_cover}"; f.puts "> lights #{setting} - 100" }
+    puts "> lights #{setting} - 100"
+    exec "lights #{setting} - 100"
+  else
+    raise "Unable to check forecast"
+  end
+end
+
+main if $0 == __FILE__

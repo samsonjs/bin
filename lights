@@ -9,7 +9,7 @@ TEMPS = {
     temp: 4200,
   },
   'cloudy' => {
-    brightness: 200,
+    brightness: 220,
     temp: 3500,
   },
   'sunrise' => {
