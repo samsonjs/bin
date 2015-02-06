@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby -w
+
+require 'json'
+
+puts JSON.generate(JSON.parse(ARGF.read))
