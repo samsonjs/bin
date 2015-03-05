@@ -1,3 +1,3 @@
 #!/bin/sh
 
-git reset --soft HEAD\^ && git reset
+git reset --soft HEAD^ && git reset
