@@ -1,5 +1,6 @@
 #!/bin/sh
 
+REMOTE="${1:-origin}"
 BRANCH=$(git branch --no-color --list | grep '^\*' | awk '{print $2}')
 if [[ "$BRANCH" != "(detached" ]]; then
     STASH_OUTPUT=$(git stash)
@@ -8,7 +9,7 @@ if [[ "$BRANCH" != "(detached" ]]; then
     else
         POP_STASH=1
     fi
-    git fetch --prune --tags origin && git rebase "origin/$BRANCH" && ([[ $POP_STASH -eq 1 ]] && git stash pop) || true
+    git fetch --prune --tags "$REMOTE" && git rebase "$REMOTE/$BRANCH" && ([[ $POP_STASH -eq 1 ]] && git stash pop) || true
 else
     echo "Cannot update in a detached HEAD state"
 fi
