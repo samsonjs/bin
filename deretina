@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+set -e # bail on errors
+
+TWOX_IMG_PATH="$1"
+ONEX_IMG_PATH="${TWOX_IMG_PATH%.png}@1x.png"
+convert -resize "50%" "$TWOX_IMG_PATH" "$ONEX_IMG_PATH"

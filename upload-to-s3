@@ -6,29 +6,31 @@ function filesize() {
   stat "$1" | cut -d' ' -f8
 }
 
-big_size=$((512 * 1024))
-max_size=$((2 * 1024 * 1024))
+ORIG_IMG_PATH="$1"
 
-img_path="$1"
-ls -lh "$img_path"
-if [[ $(filesize "$img_path") -gt $big_size ]]; then
-  echo "BIG, HALVING"
-  convert -resize "50%" "$img_path" "$img_path"
-  ls -lh "$img_path"
-  if [[ $(filesize "$img_path") -gt $big_size ]]; then
-    echo "STILL BIG, CLAMPING TO 2560x1440"
-    convert -resize "2560x1440>" "$img_path" "$img_path"
-    ls -lh "$img_path"
-    if [[ $(filesize "$img_path") -gt $max_size ]]; then
-      echo "HUGE, CONVERTING TO JPEG (75% QUALITY)"
-      new_img_path="${img_path%.png}.jpg"
-      convert -quality 75 "$img_path" "$new_img_path"
-      img_path="$new_img_path"
-      ls -lh "$img_path"
-    fi
+# ignore screenshots created by this script or upload-to-s3
+if [[ "$ORIG_IMG_PATH" == *"@1x.png" ]] || [[ "$ORIG_IMG_PATH" == *"@1x.jpg" ]]; then
+  exit 0
+fi
+
+BIG_SIZE=$((666 * 1024))
+
+WEB_IMG_PATH="$ORIG_IMG_PATH"
+ls -lh "$WEB_IMG_PATH"
+if [[ $(filesize "$ORIG_IMG_PATH") -gt $BIG_SIZE ]]; then
+  echo "TOO BIG, DERETINA..."
+  WEB_IMG_PATH="${ORIG_IMG_PATH%.png}@1x.png"
+  convert -resize "50%" "$ORIG_IMG_PATH" "$WEB_IMG_PATH"
+  ls -lh "$WEB_IMG_PATH"
+  if [[ $(filesize "$WEB_IMG_PATH") -gt $BIG_SIZE ]]; then
+    echo "STILL TOO BIG, COVERTING TO JPEG"
+    WEB_IMG_PATH="${ORIG_IMG_PATH%.png}@1x.jpg"
+    convert -quality 95 -resize "50%" "$ORIG_IMG_PATH" "$WEB_IMG_PATH"
+    ls -lh "$WEB_IMG_PATH"
   fi
 fi
-filename=$(basename "$img_path")
-s3cmd put "$img_path" s3://static.samhuri.net/"$filename"
-ruby -rerb -e "puts 'http://static.samhuri.net/' + ERB::Util.url_encode('$filename')"
-ruby -rerb -e "print 'http://static.samhuri.net/' + ERB::Util.url_encode('$filename')" | pbcopy
+FILENAME=$(basename "$WEB_IMG_PATH")
+FILENAME="${FILENAME// /_}"
+s3cmd put "$WEB_IMG_PATH" s3://static.samhuri.net/"$FILENAME"
+ruby -rerb -e "puts 'http://static.samhuri.net/' + ERB::Util.url_encode('$FILENAME')"
+ruby -rerb -e "print 'http://static.samhuri.net/' + ERB::Util.url_encode('$FILENAME')" | pbcopy
