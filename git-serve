@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Share a read-only git repo real quick
+# https://twitter.com/tenderlove/status/579425350590935040
+
+PORT=$1
+GIT_DIR=$(git rev-parse --show-toplevel)
+
+git update-server-info
+ruby -run -e httpd -- -p "$PORT" "$GIT_DIR"
