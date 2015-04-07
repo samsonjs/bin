@@ -31,6 +31,8 @@ if [[ $(filesize "$ORIG_IMG_PATH") -gt $BIG_SIZE ]]; then
 fi
 FILENAME=$(basename "$WEB_IMG_PATH")
 FILENAME="${FILENAME// /_}"
-s3cmd put "$WEB_IMG_PATH" s3://static.samhuri.net/"$FILENAME"
-echo "$FILENAME" | pbcopy
-echo "$FILENAME"
+IMG_HOST="static.samhuri.net"
+s3cmd put "$WEB_IMG_PATH" "s3://${IMG_HOST}/${FILENAME}"
+URL="http://${IMG_HOST}/${FILENAME}"
+echo -n "$URL" | pbcopy
+echo "$URL"
