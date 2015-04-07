@@ -32,7 +32,7 @@ fi
 FILENAME=$(basename "$WEB_IMG_PATH")
 FILENAME="${FILENAME// /_}"
 IMG_HOST="static.samhuri.net"
-s3cmd put "$WEB_IMG_PATH" "s3://${IMG_HOST}/${FILENAME}"
 URL="http://${IMG_HOST}/${FILENAME}"
 echo -n "$URL" | pbcopy
+s3cmd put "$WEB_IMG_PATH" "s3://${IMG_HOST}/${FILENAME}"
 echo "$URL"
