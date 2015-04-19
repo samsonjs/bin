@@ -44,6 +44,7 @@ def flux(options)
     hour, min = time.hour, time.min
     padded_min = min < 10 ? "0#{min}" : "#{min}"
     now = "#{hour}:#{padded_min}"
+    puts "current time: #{now}"
     found =
       if options[:set_current]
         now = now.sub(':', '').to_i
