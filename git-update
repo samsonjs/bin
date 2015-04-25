@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 REMOTE="${1:-origin}"
 BRANCH=$(git branch --no-color --list | grep '^\*' | awk '{print $2}')
