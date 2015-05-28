@@ -32,6 +32,10 @@ TEMPS = {
     brightness: 160,
     temp: 2200,
   },
+  'midnight' => {
+    brightness: 80,
+    temp: 1200,
+  },
 }
 TEMPS['sunny'] = TEMPS['bright']
 TEMPS['overcast'] = TEMPS['cloudy']

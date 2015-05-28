@@ -35,10 +35,12 @@ def flux(options)
   month = date.month.to_s
   day = date.day.to_s
   if times = TIMES[month][day]
+    times['midnight'] = '22:30'
     puts "sunrise: #{times['sunrise']}"
     puts "morning: #{times['morning']}"
     puts "sunset: #{times['sunset']}"
     puts "night: #{times['night']}"
+    puts "midnight: #{times['midnight']}"
 
     time = Time.now
     hour, min = time.hour, time.min
