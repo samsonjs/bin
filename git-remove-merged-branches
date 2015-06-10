@@ -1,0 +1,12 @@
+#!/bin/bash
+
+REMOTE="${1:-origin}"
+BRANCH="${2:-master}"
+
+git branch -r --merged |
+  grep "\b${REMOTE}/" |
+  grep -vE "HEAD|master|${BRANCH}" |
+  xargs -L1 |
+  sed -e "s/${REMOTE}\///" |
+  xargs git push "$REMOTE" --delete
+ 
