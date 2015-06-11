@@ -1,3 +1,14 @@
-#!/bin/sh
+#!/usr/bin/env ruby -w
 
-git diff-tree --color --cc $1 | less
+treeish = ARGV.shift || 'HEAD'
+output = nil
+loop do
+    puts "git diff-tree --color --cc #{treeish}"
+    output = `git diff-tree --color --cc #{treeish}`
+    len = output.strip.length == 40
+    break if !$?.success? || len == 0 || len == 40
+    treeish = `git log -n1 #{treeish} | head -n2 | tail -n1`.strip.split[1]
+    puts treeish
+    break unless treeish =~ /^[0-9a-f]{7}$/
+end
+puts output
