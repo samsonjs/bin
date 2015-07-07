@@ -1,0 +1,44 @@
+#!/usr/bin/ruby -w
+
+SCALES = [1, 2, 3]
+
+def usage
+  name = File.basename(__FILE__)
+  puts "Usage: #{name} <size> <input-image> <output-directory>"
+end
+
+def generate_all_scales(size, in_file, out_dir)
+  SCALES.each do |scale|
+    scale_retina(size, scale, in_file, out_dir)
+  end
+end
+
+def scale_retina(points, scale, in_file, out_dir)
+  file_scale = scale > 1 ? "@#{scale}x" : ''
+  ext = "_#{points}#{file_scale}.png"
+  filename = File.basename(in_file).sub(/\.\w+$/, ext)
+  size = points * scale
+  out_file = File.join(out_dir, filename)
+  puts "> convert '#{in_file}' -scale #{size}x#{size} '#{out_file}'"
+  output = `convert '#{in_file}' -scale #{size}x#{size} '#{out_file}'`.strip
+  puts output if output.length > 0
+end
+
+raw_size, in_file, out_dir = ARGV
+size = raw_size.to_i
+unless size > 0
+  puts "Invalid size: #{raw_size.inspect}"
+  usage
+  exit 1
+end
+unless File.exist?(in_file)
+  puts "Input image not found: #{in_file}"
+  usage
+  exit 2
+end
+unless File.directory?(out_dir)
+  puts "Output directory not found: #{out_dir}"
+  usage
+  exit 1
+end
+generate_all_scales(size, in_file, out_dir)

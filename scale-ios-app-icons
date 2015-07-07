@@ -1,0 +1,24 @@
+#!/bin/sh
+
+function usage() {
+  echo "Usage: $0 <source-icon> <output-directory>"
+}
+
+IN_FILE="$1"
+OUT_DIR="$2"
+
+if [[ ! -r "$IN_FILE" ]]; then
+  echo "Source icon not found: $IN_FILE"
+  usage
+  exit 1
+fi
+if [[ ! -d "$OUT_DIR" ]]; then
+  echo "Output directory not found: $OUT_DIR"
+  usage
+  exit 2
+fi
+
+for SIZE in 29 40 60 76; do
+  echo "* Generating app icons at $SIZE points"
+  retina-scale $SIZE "$IN_FILE" "$OUT_DIR"
+done
