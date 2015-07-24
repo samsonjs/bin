@@ -1,0 +1,4 @@
+#!/bin/sh
+
+EDIT="${1:-${VISUAL:-$EDITOR}}"
+eval $EDIT $(git conflicts | ruby -e "puts ARGF.each_line.to_a.map{|l| \"'\"+l.strip+\"'\"}.join(' ')")
