@@ -1,15 +1,37 @@
 #!/bin/bash
 
+set -e # bail on errors
+
 REMOTE="${1:-origin}"
-BRANCH=$(git branch --no-color --list | grep '^\*' | awk '{print $2}')
-if [[ "$BRANCH" != "(detached" ]]; then
-    STASH_OUTPUT=$(git stash)
-    if [[ "$STASH_OUTPUT" = "No local changes to save" ]]; then
-        POP_STASH=0
-    else
-        POP_STASH=1
-    fi
-    git fetch --prune --tags "$REMOTE" && git rebase "$REMOTE/$BRANCH" && ([[ $POP_STASH -eq 1 ]] && git stash pop) || true
+ORIG_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$ORIG_BRANCH" = "HEAD" ]]; then
+  echo "Cannot update in a detached HEAD state"
+  exit 1
+fi
+if [[ -z "$2" ]]; then
+  BRANCHES="$ORIG_BRANCH"
 else
-    echo "Cannot update in a detached HEAD state"
+  shift
+  BRANCHES="$@"
+fi
+
+STASH_OUTPUT=$(git stash)
+if [[ "$STASH_OUTPUT" = "No local changes to save" ]]; then
+    POP_STASH=0
+else
+    POP_STASH=1
+fi
+
+git fetch --prune --tags "$REMOTE"
+
+for BRANCH in $BRANCHES; do
+  echo "* Updating $BRANCH from $REMOTE/$BRANCH"
+  git checkout "$BRANCH"
+  git rebase "$REMOTE/$BRANCH"
+done
+
+git checkout "$ORIG_BRANCH"
+
+if [[ $POP_STASH -eq 1 ]]; then
+  git stash pop
 fi
