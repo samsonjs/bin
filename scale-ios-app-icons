@@ -1,19 +1,20 @@
 #!/bin/sh
 
 function usage() {
-  echo "Usage: $0 <source-icon> <output-directory>"
+  NAME=$(basename "$0")
+  echo "Usage: ${NAME} <source-icon> <output-directory>"
 }
 
 IN_FILE="$1"
 OUT_DIR="$2"
 
 if [[ ! -r "$IN_FILE" ]]; then
-  echo "Source icon not found: $IN_FILE"
+  echo "Missing source icon, or file not found: $IN_FILE"
   usage
   exit 1
 fi
 if [[ ! -d "$OUT_DIR" ]]; then
-  echo "Output directory not found: $OUT_DIR"
+  echo "Missing output directory, or directory not found: $OUT_DIR"
   usage
   exit 2
 fi
