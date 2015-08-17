@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e # bail on errors
+
+REMOTE="${1:-origin}"
+BRANCH="${2:-$(git rev-parse --abbrev-ref HEAD)}"
+
+git update "$REMOTE" develop
+git checkout develop
+git merge --no-ff "$BRANCH"
+git push
+git checkout "$BRANCH"
+git push -u "$REMOTE" "$BRANCH"

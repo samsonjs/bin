@@ -1,0 +1,10 @@
+#!/bin/sh
+
+REMOTE="${1:-origin}"
+BRANCH="${2:-$(git rev-parse --abbrev-ref HEAD)}"
+REPO=$(git config --get remote.${REMOTE}.url | cut -d':' -f2 | cut -d'.' -f1)
+if [[ -z "$REPO" ]] || [[ -z "$BRANCH" ]]; then
+  echo "usage: $(basename "$0") <remote> <branch (ref)>"
+  exit 1
+fi
+open "https://github.com/${REPO}/compare/${BRANCH}?expand=1"
