@@ -1,7 +1,8 @@
 #!/bin/sh
 
-REMOTE="${1:-origin}"
-BRANCH="${2:-$(git rev-parse --abbrev-ref HEAD)}"
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REMOTE="${1:-$(git config --get branch.${CURRENT_BRANCH}.remote)}"
+BRANCH="${2:-$CURRENT_BRANCH}"
 REPO=$(git config --get remote.${REMOTE}.url | cut -d':' -f2 | cut -d'.' -f1)
 if [[ -z "$REPO" ]] || [[ -z "$BRANCH" ]]; then
   echo "usage: $(basename "$0") <remote> <branch (ref)>"
