@@ -2,7 +2,11 @@
 
 set -e # bail on errors
 
-ORIG_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+function current_branch() {
+  git rev-parse --abbrev-ref HEAD
+}
+
+ORIG_BRANCH=$(current_branch)
 REMOTE="${1:-$(git config --get branch.${ORIG_BRANCH}.remote)}"
 if [[ "$ORIG_BRANCH" = "HEAD" ]]; then
   echo "Cannot update in a detached HEAD state"
@@ -11,7 +15,9 @@ fi
 if [[ -z "$2" ]]; then
   BRANCHES="$ORIG_BRANCH"
 else
-  shift
+  if [[ "$1" = "$REMOTE" ]]; then
+    shift
+  fi
   BRANCHES="$@"
 fi
 
@@ -26,11 +32,15 @@ git fetch --prune --tags "$REMOTE"
 
 for BRANCH in $BRANCHES; do
   echo "* Updating $BRANCH from $REMOTE/$BRANCH"
-  git checkout "$BRANCH"
+  if [[ "$BRANCH" != "$(current_branch)" ]]; then
+    git checkout "$BRANCH"
+  fi
   git rebase "$REMOTE/$BRANCH"
 done
 
-git checkout "$ORIG_BRANCH"
+if [[ "$ORIG_BRANCH" != "$(current_branch)" ]]; then
+  git checkout "$ORIG_BRANCH"
+fi
 
 if [[ $POP_STASH -eq 1 ]]; then
   git stash pop
