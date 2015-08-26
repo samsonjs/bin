@@ -2,8 +2,8 @@
 
 set -e # bail on errors
 
-REMOTE="${1:-origin}"
-ORIG_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+ORIG_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REMOTE="${1:-$(git config --get branch.${ORIG_BRANCH}.remote)}"
 if [[ "$ORIG_BRANCH" = "HEAD" ]]; then
   echo "Cannot update in a detached HEAD state"
   exit 1
