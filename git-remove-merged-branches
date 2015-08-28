@@ -3,10 +3,16 @@
 REMOTE="${1:-origin}"
 BRANCH="${2:-master}"
 
-git branch -r --merged |
+MERGED_BRANCHES=$(git branch -r --merged |
   grep "\b${REMOTE}/" |
   grep -vE "HEAD|master|${BRANCH}" |
   xargs -L1 |
-  sed -e "s/${REMOTE}\///" |
-  xargs git push "$REMOTE" --delete
+  sed -e "s/${REMOTE}\///")
+if [[ -n "$MERGED_BRANCHES" ]]; then
+  echo "Removing merged branches:"
+  echo "$MERGED_BRANCHES"
+  echo "$MERGED_BRANCHES" | xargs git push "$REMOTE" --delete
+else
+  echo "No branches to remove"
+fi
  
