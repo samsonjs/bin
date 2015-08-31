@@ -2,6 +2,11 @@
 
 REMOTE="${1:-origin}"
 BRANCH="${2:-master}"
+if [[ "$3" = "-n" ]]; then
+  DRY_RUN=1
+else
+  DRY_RUN=0
+fi
 
 MERGED_BRANCHES=$(git branch -r --merged |
   grep "\b${REMOTE}/" |
@@ -11,7 +16,9 @@ MERGED_BRANCHES=$(git branch -r --merged |
 if [[ -n "$MERGED_BRANCHES" ]]; then
   echo "Removing merged branches:"
   echo "$MERGED_BRANCHES"
-  echo "$MERGED_BRANCHES" | xargs git push "$REMOTE" --delete
+  if [[ $DRY_RUN -eq 0 ]]; then
+    echo "$MERGED_BRANCHES" | xargs git push "$REMOTE" --delete
+  fi
 else
   echo "No branches to remove"
 fi
