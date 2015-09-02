@@ -3,7 +3,11 @@
 set -e # bail on errors
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-REMOTE="${1:-$(git config --get branch.${CURRENT_BRANCH}.remote)}"
+DEFAULT_REMOTE=$(git config --get branch.${CURRENT_BRANCH}.remote || true) # don't fail
+if [[ -z "$DEFAULT_REMOTE" ]]; then
+  DEFAULT_REMOTE=$(git config --get branch.master.remote)
+fi
+REMOTE="${1:-$DEFAULT_REMOTE}"
 BRANCH="${2:-$CURRENT_BRANCH}"
 
 git update "$REMOTE" develop
