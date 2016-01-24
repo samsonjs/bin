@@ -25,7 +25,7 @@ def scale_retina(points, scale, in_file, out_dir)
 end
 
 raw_size, in_file, out_dir = ARGV
-size = raw_size.to_i
+size = raw_size.to_f
 unless size > 0
   puts "Invalid size: #{raw_size.inspect}"
   usage

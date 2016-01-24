@@ -19,7 +19,7 @@ if [[ ! -d "$OUT_DIR" ]]; then
   exit 2
 fi
 
-for SIZE in 29 40 60 76; do
+for SIZE in 29 40 60 76 83.5; do
   echo "* Generating app icons at $SIZE points"
   retina-scale $SIZE "$IN_FILE" "$OUT_DIR"
 done
