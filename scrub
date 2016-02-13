@@ -22,6 +22,10 @@ class Scrubber
     @status = :ok
   end
 
+  def git_repo?(path)
+    File.exist?(File.join(path, '.git'))
+  end
+
   def scrub(dir = @root_dir)
     scrub_file = scrub_filename(dir)
     if File.exist?(File.join(dir, 'noscrub'))
@@ -43,7 +47,9 @@ class Scrubber
 
       # descend into subdirectories
       if File.directory?(file)
-        scrub(file)
+
+        # ignore git repos as the contents may change and git can fsck itself
+        scrub(file) unless git_repo?(file)
 
       # scrub this file
       else
