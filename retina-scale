@@ -4,41 +4,50 @@ SCALES = [1, 2, 3]
 
 def usage
   name = File.basename(__FILE__)
-  puts "Usage: #{name} <size> <input-image> <output-directory>"
+  puts "Usage: #{name} <input-image> <output-directory> <output-filename-prefix> <width> <height>"
 end
 
-def generate_all_scales(size, in_file, out_dir)
-  SCALES.each do |scale|
-    scale_retina(size, scale, in_file, out_dir)
-  end
-end
-
-def scale_retina(points, scale, in_file, out_dir)
+def scale_retina(width, height, scale, in_file, out_dir, prefix)
   file_scale = scale > 1 ? "@#{scale}x" : ''
-  ext = "_#{points}#{file_scale}.png"
-  filename = File.basename(in_file).sub(/\.\w+$/, ext)
-  size = points * scale
+  filename = "#{prefix}#{file_scale}.png"
   out_file = File.join(out_dir, filename)
-  puts "> convert '#{in_file}' -scale #{size}x#{size} '#{out_file}'"
-  output = `convert '#{in_file}' -scale #{size}x#{size} '#{out_file}'`.strip
+  puts "> convert '#{in_file}' -scale #{width * scale}x#{height * scale} '#{out_file}'"
+  output = `convert '#{in_file}' -scale #{width * scale}x#{height * scale} '#{out_file}'`.strip
   puts output if output.length > 0
 end
 
-raw_size, in_file, out_dir = ARGV
-size = raw_size.to_f
-unless size > 0
-  puts "Invalid size: #{raw_size.inspect}"
-  usage
-  exit 1
+def image_dimensions(path)
+  `identify '#{path}'`.split[2].split('x').map(&:to_i)
 end
+
+in_file, out_dir, prefix, raw_width, raw_height = ARGV
 unless File.exist?(in_file)
   puts "Input image not found: #{in_file}"
   usage
-  exit 2
+  exit 1
 end
 unless File.directory?(out_dir)
   puts "Output directory not found: #{out_dir}"
   usage
-  exit 1
+  exit 2
 end
-generate_all_scales(size, in_file, out_dir)
+unless prefix && prefix.strip.length > 0
+  puts "Missing output filename prefix"
+  usage
+  exit 3
+end
+if raw_width && raw_height
+  width = raw_width.to_i
+  height = raw_height.to_i
+else
+  width, height = image_dimensions(in_file).map { |x| x / 3 }
+end
+unless width > 0 && height > 0
+  puts "Invalid dimensions: #{raw_width.inspect} #{raw_height.inspect}"
+  usage
+  exit 4
+end
+
+SCALES.each do |scale|
+  scale_retina(width, height, scale, in_file, out_dir, prefix)
+end
