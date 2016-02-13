@@ -57,8 +57,9 @@ def main
         title ||= line
       end
     end
+    title ||= filename.sub(/^[0-9]+-/, '').sub(/\.[^.]+$/, '')
     if url
-      command = notify_command(title || url, url)
+      command = notify_command(title, url)
       log "[#{Time.now.iso8601}] #{command}"
       output = `#{command}`
       unless $?.success?
