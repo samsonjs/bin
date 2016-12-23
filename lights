@@ -30,11 +30,11 @@ TEMPS = {
   },
   'night' => {
     brightness: 160,
-    temp: 2200,
+    temp: 2300,
   },
   'midnight' => {
-    brightness: 80,
-    temp: 1200,
+    brightness: 120,
+    temp: 2100,
   },
 }
 TEMPS['sunny'] = TEMPS['bright']
