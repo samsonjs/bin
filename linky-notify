@@ -21,17 +21,21 @@ def munge_invalid_encoding(s)
   s.chars.map { |c| c >= "\0" && c <= "\176" ? c : '?' }.join
 end
 
-def e(s)
+def force_utf8(s)
   if !s.valid_encoding?
-    puts "forcing encoding of #{s.inspect}"
+    log "forcing encoding of #{s[0..30].inspect}"
     s = s.force_encoding('UTF-8')
     if !s.valid_encoding?
-      puts "munging #{s.inspect}"
+      log "munging #{s[0..30].inspect}"
       s = munge_invalid_encoding(s)
     end
-    puts "s is now #{s.inspect}"
+    log "s is now #{s[0..30].inspect}"
   end
-  Shellwords.escape(s)
+  s
+end
+
+def e(s)
+  Shellwords.escape(force_utf8(s))
 end
 
 def notify_command(title, url)
@@ -40,12 +44,13 @@ end
 
 def main
   dir = ENV['WATCH_DIR']
-  created = JSON.parse(ENV['WATCH_CREATED'])
+  created = JSON.parse(force_utf8(ENV['WATCH_CREATED']))
   log "dir = #{dir}"
   log "created = #{created.inspect}"
   created.each do |filename|
     path = File.join(dir, filename)
-    lines = File.readlines(path).map(&:strip)
+    next if File.directory? path
+    lines = File.readlines(path).map { |l| force_utf8(l).strip }
     title, url = nil, nil
     until (title && url) || lines.empty?
       line = lines.shift
@@ -69,7 +74,7 @@ def main
       Dir.mkdir(archive_dir) unless File.exists?(archive_dir)
       File.rename(path, File.join(archive_dir, filename))
     else
-      log "[#{Time.now.iso8601}] Failed to find URL in #{filename}: #{File.read(path)}"
+      log "[#{Time.now.iso8601}] Failed to find URL in #{filename}: #{File.read(path)[0..200]}"
     end
   end
 rescue Exception => e
