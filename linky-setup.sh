@@ -6,6 +6,10 @@ if ! which northwatcher >/dev/null 2>/dev/null; then
   npm install -g northwatcher
 fi
 
+if ! which terminal-notifier >/dev/null 2>/dev/null; then
+  brew install terminal-notifier
+fi
+
 machine_name=$(hostname -s)
 mkdir -p $HOME/Dropbox/Apps/Linky/$machine_name/Archive
 
