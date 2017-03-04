@@ -9,7 +9,7 @@ DEBUG = false
 def log_file
   @log_file ||= begin
     at_exit { log_file.close }
-    File.open('/Users/sjs/linky-notify.log', 'a')
+    File.open(File.expand_path('~/linky-notify.log'), 'a')
   end
 end
 
@@ -39,7 +39,8 @@ def e(s)
 end
 
 def notify_command(title, url)
-  "/Users/sjs/.rbenv/shims/terminal-notifier -title #{e(title)} -message #{e(url)} -open #{e(url)} -sender com.apple.Terminal 2>&1"
+  notifier = File.expand_path '~/.rbenv/shims/terminal-notifier'
+  "#{notifier} -title #{e(title)} -message #{e(url)} -open #{e(url)} -actions 'Open' -closeLabel Ignore 2>&1"
 end
 
 def main
