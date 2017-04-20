@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+choices = ARGV
+puts choices.sample
