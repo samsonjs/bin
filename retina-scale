@@ -12,12 +12,12 @@ def scale_retina(width, height, scale, in_file, out_dir, prefix)
   filename = "#{prefix}#{file_scale}.png"
   out_file = File.join(out_dir, filename)
   puts "> convert '#{in_file}' -scale #{width * scale}x#{height * scale} '#{out_file}'"
-  output = `convert '#{in_file}' -scale #{width * scale}x#{height * scale} '#{out_file}'`.strip
+  output = `gm convert '#{in_file}' -scale #{width * scale}x#{height * scale} '#{out_file}'`.strip
   puts output if output.length > 0
 end
 
 def image_dimensions(path)
-  `identify '#{path}'`.split[2].split('x').map(&:to_i)
+  `gm identify '#{path}'`.split[2].split('x').map(&:to_i)
 end
 
 in_file, out_dir, prefix, raw_width, raw_height = ARGV

@@ -19,8 +19,9 @@ if [[ ! -d "$OUT_DIR" ]]; then
   exit 2
 fi
 
-for SIZE in 29 40 60 76 83.5; do
-  PREFIX="${IN_FILE%.png}_$SIZE"
+for SIZE in 20 29 40 60 76 83.5; do
+  FILENAME=$(basename "$IN_FILE")
+  PREFIX="${FILENAME%.png}_$SIZE"
   echo "* Generating app icons at $SIZE points with filename prefix $PREFIX"
   retina-scale "$IN_FILE" "$OUT_DIR" "$PREFIX" $SIZE $SIZE
 done
