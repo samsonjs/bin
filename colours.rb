@@ -20,9 +20,9 @@ elsif ARGV.size == 3
   red,green,blue = *rgb
   if red.index('.') || green.index('.') || blue.index('.')
     redf, greenf, bluef = red, green, blue
-    red = (255 * red.to_f).to_i
-    green = (255 * green.to_f).to_i
-    blue = (255 * blue.to_f).to_i
+    red = (255 * red.to_f).round
+    green = (255 * green.to_f).round
+    blue = (255 * blue.to_f).round
   end
   hex = [red, green, blue].map {|n| to_hex(n) }.join
 end
