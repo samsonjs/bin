@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby -w
+
+require 'json'
+
+def main
+  while dir = ARGV.shift
+    unless File.directory? dir
+      puts "[warn] Skipping non-directory: #{dir}"
+      next
+    end
+
+    all_images = Dir[File.join(dir, '*@[23]x.png')].map { |f| File.basename f }
+    image3x = File.basename Dir[File.join(dir, '*@3x.png')].first
+    image2x = File.basename  Dir[File.join(dir, '*@2x.png')].first
+    image1x = (all_images - [image2x, image3x]).first
+    unless [2, 3].include?(all_images.size) && image2x && image3x
+      puts "[warn] Skipping #{dir} because 2x and 3x images are required. 1x image is optional. Max 3 images."
+      next
+    end
+
+    images = [image1x, image2x, image3x]
+    scale = 0
+    imageset_images = images
+      .map { |filename|
+        scale += 1
+        filename && {
+          idiom: 'universal',
+          filename: filename,
+          scale: "#{scale}x"
+        }
+      }
+      .compact
+    imageset = {
+      images: imageset_images,
+      info: {
+        version: 1,
+        author: 'generate-xcode-imageset'
+      }
+    }
+    json = JSON.pretty_generate(imageset)
+    path = File.join(dir, 'Contents.json')
+    File.write(path, json)
+    images_written = images.compact
+    puts "* Wrote #{images_written.size} images to #{path}: #{images_written.join(', ')}"
+  end
+end
+
+main if $0 == __FILE__
