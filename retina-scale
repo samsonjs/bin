@@ -37,8 +37,8 @@ unless prefix && prefix.strip.length > 0
   exit 3
 end
 if raw_width && raw_height
-  width = raw_width.to_i
-  height = raw_height.to_i
+  width = raw_width.to_f
+  height = raw_height.to_f
 else
   width, height = image_dimensions(in_file).map { |x| x / 3 }
 end
