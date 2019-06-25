@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby -w
+#
+# Generates Sub-Resource Integrity hashes for external resources in HTML.
+# See https://infosec.mozilla.org/guidelines/web_security#subresource-integrity
+# 
+
+
+url = ARGV.shift.to_s
+unless url =~ %r{^https?://}
+  $stderr.puts "usage: sri-integrity <url>"
+  exit 1
+end
+
+hash = `curl -s '#{url}' | openssl dgst -sha384 -binary | openssl base64 -A`
+if $?.success?
+  puts hash
+else
+  exit 1
+end
