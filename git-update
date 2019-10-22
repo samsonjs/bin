@@ -7,7 +7,7 @@ function current_branch() {
 }
 
 ORIG_BRANCH=$(current_branch)
-DEFAULT_REMOTE=$(git config --get branch.master.remote)
+DEFAULT_REMOTE=$(git config --get branch.${ORIG_BRANCH}.remote)
 REMOTE="${1:-$DEFAULT_REMOTE}"
 if [[ "$ORIG_BRANCH" = "HEAD" ]]; then
   echo "Cannot update in a detached HEAD state"
