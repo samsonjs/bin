@@ -1,0 +1,5 @@
+#!/bin/sh
+
+status=${1:-true}
+defaults write com.apple.finder AppleShowAllFiles $status
+killall Finder
