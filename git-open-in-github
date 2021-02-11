@@ -10,5 +10,4 @@ if [[ -z "$REPO" ]] || [[ -z "$BRANCH" ]]; then
   echo "usage: $(basename "$0") <remote> <branch (ref)>"
   exit 1
 fi
-#open -a "Google Chrome" "https://github.com/${REPO}/compare/${BRANCH}?expand=1"
 open "https://github.com/${REPO}/compare/${BRANCH}?expand=1"

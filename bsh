@@ -1,3 +1,0 @@
-#!/bin/sh
-
-java -jar $HOME/apps/bsh-2.0b4.jar

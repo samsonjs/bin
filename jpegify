@@ -1,8 +1,0 @@
-#!/bin/zsh
-
-set -e # bail on errors
-
-IMG_PATH="$1"
-QUALITY="${2:-95}"
-JPEG_IMG_PATH="${IMG_PATH%.*}.jpg"
-convert -quality $QUALITY "$IMG_PATH" "$JPEG_IMG_PATH"

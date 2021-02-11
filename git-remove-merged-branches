@@ -22,4 +22,3 @@ if [[ -n "$MERGED_BRANCHES" ]]; then
 else
   echo "No branches to remove"
 fi
- 
