@@ -38,6 +38,8 @@ done
 for SIZE in 20 29 40 76 83.5; do
   PREFIX="${FILENAME%.png}_iPad_$SIZE"
   echo "* Generating iPad icons at $SIZE points with filename prefix $PREFIX"
+  S=$SIZE
+  gm convert "$IN_FILE" -scale ${S}x${S} "$OUT_DIR/$PREFIX.png"
   S=$((2 * SIZE))
   gm convert "$IN_FILE" -scale ${S}x${S} "$OUT_DIR/$PREFIX@2x.png"
 done
