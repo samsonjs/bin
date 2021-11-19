@@ -1,0 +1,20 @@
+#!/bin/bash
+
+grep -F "pam_tid" /etc/pam.d/sudo >/dev/null
+case $? in
+  0)
+    echo "TouchID unlock already in place"
+    ;;
+
+  1)
+    sudo sed -i '' '1a\
+auth       sufficient     pam_tid.so
+    ' /etc/pam.d/sudo
+
+    echo "TouchID unlock enabled"
+    ;;
+
+  *)
+    echo "Error trying to read /etc/pam.d/sudo"
+    ;;
+esac
