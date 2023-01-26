@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -euo pipefail
+
+for file in *.mp3; do
+  echo "* Converting $file to ${file%.mp3}.m4a..."
+  rm -f "${file%.mp3}.m4a"
+  "${BASH_SOURCE[0]}/../convert-song" "$file" >/dev/null 2>&1
+done

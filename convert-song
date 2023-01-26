@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -euo pipefail
+
+input="$1"
+if ! [ -r "$input" ]; then
+  if ! [ -z "$input" ]; then
+    echo "[error] File not found: $input"
+  else
+    echo "usage: $0 <input mp3>"
+    echo
+    echo "Converts an mp3 to an m4a (AAC) and reduces the bitrate to 128 kbps."
+  fi
+  exit 1
+fi
+
+# -vn drops video on the floor, required for source mp3s with artwork
+ffmpeg -i "$input" -vn -c:a aac -b:a 128k "${input%.mp3}.m4a"
