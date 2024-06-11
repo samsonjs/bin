@@ -26,22 +26,13 @@ APPSTORE_FILE="${OUT_DIR}/${FILENAME%.png}_marketing_1024.png"
 echo "> convert '${IN_FILE}' -scale 1024x1024 '${APPSTORE_FILE}'"
 gm convert "$IN_FILE" -scale 1024x1024 "$APPSTORE_FILE"
 
-for SIZE in 20 29 40 60; do
-  PREFIX="${FILENAME%.png}_iPhone_$SIZE"
-  echo "* Generating iPhone icons at $SIZE points with filename prefix $PREFIX"
+for SIZE in 20 29 38 40 60 64 68 76 83.5; do
+  PREFIX="${FILENAME%.png}_iOS_$SIZE"
+  echo "* Generating iOS icons at $SIZE points with filename prefix $PREFIX"
   S=$((2 * SIZE))
   gm convert "$IN_FILE" -scale ${S}x${S} "$OUT_DIR/$PREFIX@2x.png"
   S=$((3 * SIZE))
   gm convert "$IN_FILE" -scale ${S}x${S} "$OUT_DIR/$PREFIX@3x.png"
-done
-
-for SIZE in 20 29 40 76 83.5; do
-  PREFIX="${FILENAME%.png}_iPad_$SIZE"
-  echo "* Generating iPad icons at $SIZE points with filename prefix $PREFIX"
-  S=$SIZE
-  gm convert "$IN_FILE" -scale ${S}x${S} "$OUT_DIR/$PREFIX.png"
-  S=$((2 * SIZE))
-  gm convert "$IN_FILE" -scale ${S}x${S} "$OUT_DIR/$PREFIX@2x.png"
 done
 
 for SIZE in 16 32 128 256 512; do
