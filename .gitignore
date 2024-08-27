@@ -17,3 +17,6 @@ redis-update*
 sbt
 sbt-launch.jar
 subl
+docker*
+kube*
+orb*
