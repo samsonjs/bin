@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+DIFF=$(git diff --staged)
+if [[ -n "$DIFF" ]]; then
+    llm "Write a code commit message for this diff on the branch $BRANCH and only output the message itself so it can be used directly to commit. Include a one-line summary, and optionally a description below that if there are lots of changes. Be concise and avoid adding fluff or filler. Wrap the description at 70 characters per line.\n\n\`\`\`\n$DIFF\n\`\`\`"
+fi
