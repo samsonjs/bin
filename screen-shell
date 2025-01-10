@@ -1,0 +1,9 @@
+#!/bin/zsh
+#
+# Executes all the given arguments and then starts an interactive shell.
+# Intended to be used in .screenrc to run a command and not close the
+# screen when it exits.
+
+"$@"
+echo "$@ exited with $?, starting zsh..."
+zsh -i
