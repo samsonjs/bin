@@ -1,3 +1,21 @@
 #!/bin/zsh
+#
+# git-diff-merge-conflict-resolution - Show combined diff for merge conflict resolution
+#
+# Displays a combined diff showing how conflicts were resolved in a merge commit.
+# Uses git diff-tree with --cc to show the changes from all parents.
+#
+# Usage: git-diff-merge-conflict-resolution [commit]
+#
+# Examples:
+#   git-diff-merge-conflict-resolution      # Show resolution for HEAD
+#   git-diff-merge-conflict-resolution abc123  # Show resolution for specific commit
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Usage: $(basename "$0") [commit]"
+  echo "Show combined diff for merge conflict resolution"
+  echo "Defaults to HEAD if no commit specified"
+  exit 0
+fi
 
 git diff-tree --color --cc "${1:-HEAD}"

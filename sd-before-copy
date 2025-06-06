@@ -1,4 +1,8 @@
 #!/bin/zsh
+#
+# sd-before-copy - Pre-backup script for SuperDuper! to run the backup vortex
+#
+# Usage: sd-before-copy (called automatically by SuperDuper!)
 
 # Redirect stderr to stdout because SuperDuper! interprets any output to stderr as a failure.
 # Mystifying decision but whatever. Easy to work around it.

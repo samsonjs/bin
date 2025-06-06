@@ -1,4 +1,27 @@
 #!/usr/bin/env ruby
+#
+# roll - Random choice selector from command line arguments
+#
+# Randomly selects one item from the provided command line arguments.
+# Useful for making decisions or selecting random items from a list.
+#
+# Usage: roll <choice1> [<choice2> ...]
+#
+# Examples:
+#   roll heads tails
+#   roll red blue green yellow
+#   roll "option 1" "option 2" "option 3"
+
+if ARGV.empty? || ARGV.include?('-h') || ARGV.include?('--help')
+  puts "Usage: #{File.basename(__FILE__)} <choice1> [<choice2> ...]"
+  puts "Randomly select one item from the provided arguments"
+  puts ""
+  puts "Examples:"
+  puts "  #{File.basename(__FILE__)} heads tails"
+  puts "  #{File.basename(__FILE__)} red blue green yellow"
+  puts "  #{File.basename(__FILE__)} \"option 1\" \"option 2\" \"option 3\""
+  exit 0
+end
 
 choices = ARGV
 puts choices.sample

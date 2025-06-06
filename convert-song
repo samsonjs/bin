@@ -1,4 +1,13 @@
 #!/bin/bash
+#
+# convert-song - Convert an mp3 file to m4a format with reduced bitrate
+#
+# Converts an mp3 to an m4a (AAC) and reduces the bitrate to 128 kbps.
+# Drops video streams (useful for mp3s with embedded artwork).
+#
+# Usage: convert-song <input.mp3>
+#
+# Requirements: ffmpeg
 
 set -euo pipefail
 

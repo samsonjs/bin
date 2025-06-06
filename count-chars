@@ -1,3 +1,0 @@
-#!/bin/sh
-
-pbpaste | ruby -e 'puts ARGF.read.length'

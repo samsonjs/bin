@@ -1,4 +1,22 @@
 #!/bin/sh
+#
+# finder-show-hidden-files - Toggle visibility of hidden files in macOS Finder
+#
+# Sets the AppleShowAllFiles preference and restarts Finder to show/hide hidden files.
+# Defaults to showing hidden files if no argument is provided.
+#
+# Usage: finder-show-hidden-files [true|false]
+#
+# Examples:
+#   finder-show-hidden-files        # Show hidden files
+#   finder-show-hidden-files false  # Hide hidden files
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Usage: $(basename "$0") [true|false]"
+  echo "Toggle visibility of hidden files in Finder"
+  echo "Defaults to 'true' (show hidden files) if no argument provided"
+  exit 0
+fi
 
 status=${1:-true}
 defaults write com.apple.finder AppleShowAllFiles $status

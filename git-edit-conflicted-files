@@ -1,4 +1,22 @@
 #!/bin/sh
+#
+# git-edit-conflicted-files - Open all conflicted files in your editor
+#
+# Opens all files with merge conflicts in your preferred editor.
+# Uses git-conflicts to find conflicted files and opens them all at once.
+#
+# Usage: git-edit-conflicted-files [editor]
+#
+# Examples:
+#   git-edit-conflicted-files        # Use $VISUAL or $EDITOR
+#   git-edit-conflicted-files vim    # Use vim specifically
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Usage: $(basename "$0") [editor]"
+  echo "Open all conflicted files in your editor"
+  echo "Uses \$VISUAL or \$EDITOR if no editor specified"
+  exit 0
+fi
 
 EDIT="${1:-${VISUAL:-$EDITOR}}"
 eval $EDIT $(git conflicts | ruby -e "puts ARGF.each_line.to_a.map{|l| \"'\"+l.strip+\"'\"}.join(' ')")

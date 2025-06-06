@@ -1,4 +1,13 @@
 #!/bin/bash
+#
+# convert-all-songs - Batch convert all mp3 files in current directory to m4a format
+#
+# Converts all .mp3 files in the current directory to .m4a (AAC) format at 128 kbps.
+# Removes any existing .m4a files before conversion to avoid conflicts.
+#
+# Usage: convert-all-songs
+#
+# Requirements: ffmpeg, convert-song script in same directory
 
 set -euo pipefail
 

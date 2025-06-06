@@ -1,4 +1,16 @@
 #!/usr/bin/env ruby -w
+#
+# jsonugly - Minify JSON by removing whitespace
+#
+# Reads JSON from stdin or files and outputs compact/minified JSON.
+# Removes all unnecessary whitespace to make JSON "ugly" but smaller.
+#
+# Usage: jsonugly [file ...]
+#        cat file.json | jsonugly
+#
+# Examples:
+#   jsonugly data.json
+#   echo '{"a": 1, "b": 2}' | jsonugly  # outputs {"a":1,"b":2}
 
 require 'json'
 

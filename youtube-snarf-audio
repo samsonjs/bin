@@ -1,4 +1,18 @@
 #!/usr/bin/env ruby
+#
+# youtube-snarf-audio - Extract audio from YouTube videos
+#
+# Downloads YouTube videos and extracts audio to m4a format.
+# Accepts YouTube URLs or just video IDs as arguments.
+# Skips audio extraction if output file already exists.
+#
+# Usage: youtube-snarf-audio <youtube-url> [<youtube-url> ...]
+#
+# Examples:
+#   youtube-snarf-audio https://youtube.com/watch?v=abc123
+#   youtube-snarf-audio abc123
+#
+# Requires: youtube-dl, ffmpeg
 
 require 'cgi'
 require 'faraday'

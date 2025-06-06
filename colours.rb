@@ -1,4 +1,32 @@
 #!/usr/bin/env ruby
+#
+# colours.rb - Convert between color formats (hex, RGB, UIColor)
+#
+# Converts between hex colors and RGB values, with output in multiple formats
+# including CSS, UIColor (iOS/macOS), and normalized float values.
+#
+# Usage: colours.rb <hex-color>
+#        colours.rb <red> <green> <blue>
+#
+# Examples:
+#   colours.rb "#ff0000"
+#   colours.rb ff0000
+#   colours.rb 255 0 0
+#   colours.rb 1.0 0.0 0.0
+
+if ARGV.empty? || ARGV.include?('-h') || ARGV.include?('--help')
+  puts "Usage: #{File.basename(__FILE__)} <hex-color>"
+  puts "       #{File.basename(__FILE__)} <red> <green> <blue>"
+  puts ""
+  puts "Convert between color formats (hex, RGB, UIColor)"
+  puts ""
+  puts "Examples:"
+  puts "  #{File.basename(__FILE__)} \"#ff0000\""
+  puts "  #{File.basename(__FILE__)} ff0000"
+  puts "  #{File.basename(__FILE__)} 255 0 0"
+  puts "  #{File.basename(__FILE__)} 1.0 0.0 0.0"
+  exit 0
+end
 
 hex = ''
 rgb = []

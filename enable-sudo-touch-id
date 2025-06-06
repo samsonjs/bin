@@ -1,4 +1,18 @@
 #!/bin/zsh
+#
+# enable-sudo-touch-id - Enable Touch ID authentication for sudo commands
+#
+# Configures PAM to allow Touch ID for sudo authentication on macOS.
+# Creates /etc/pam.d/sudo_local from template and enables the auth module.
+#
+# Usage: enable-sudo-touch-id
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Usage: $(basename "$0")"
+  echo "Enable Touch ID authentication for sudo commands"
+  echo "Requires macOS with Touch ID support"
+  exit 0
+fi
 
 if [[ -e /etc/pam.d/sudo_local ]]; then
     echo "TouchID unlock already in place"
