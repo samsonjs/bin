@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e # bail on errors
+set -euo pipefail
 
 function current_branch() {
   git rev-parse --abbrev-ref HEAD | sed -e 's/^heads\///'
@@ -13,7 +13,7 @@ if [[ "$ORIG_BRANCH" = "HEAD" ]]; then
   echo "Cannot update in a detached HEAD state"
   exit 1
 fi
-if [[ -z "$2" ]]; then
+if [[ -z "${2:-}" ]]; then
   BRANCHES="$ORIG_BRANCH"
 else
   if [[ "$1" = "$REMOTE" ]]; then
