@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Script to add DD+ 5.1 TV Mix audio track to movies with DTS-only audio
+# Usage: add-tv-audio <path-to-video-file>
+
+set -e
+
+if [ $# -eq 0 ]; then
+    echo "Usage: add-tv-audio <path-to-video-file>"
+    echo ""
+    echo "This script adds a DD+ 5.1 TV Mix audio track to videos that only have DTS audio."
+    echo "The original file will be replaced with the new version."
+    exit 1
+fi
+
+VIDEO_FILE="$1"
+
+if [ ! -f "$VIDEO_FILE" ]; then
+    echo "Error: File not found: $VIDEO_FILE"
+    exit 1
+fi
+
+echo "Analyzing: $VIDEO_FILE"
+echo ""
+
+# Check audio codecs
+CODECS=$(ffprobe -v error -select_streams a -show_entries stream=codec_name -of csv=p=0 "$VIDEO_FILE" 2>/dev/null | sort -u)
+CODEC_COUNT=$(echo "$CODECS" | wc -l)
+
+# Check if it only has DTS
+if echo "$CODECS" | grep -q "^dts$" && [ "$CODEC_COUNT" -eq 1 ]; then
+    echo "✓ File has DTS-only audio"
+    echo "Adding DD+ 5.1 TV Mix track..."
+    echo ""
+
+    # Get directory and filename
+    DIR=$(dirname "$VIDEO_FILE")
+    FILENAME=$(basename "$VIDEO_FILE")
+    TEMP_FILE="$DIR/.$FILENAME.new.tmp"
+
+    # Run ffmpeg
+    if ffmpeg -i "$VIDEO_FILE" \
+        -map 0:v -map 0:a:0 -map 0:a:0 -map 0:s? \
+        -c:v copy \
+        -c:a:0 copy \
+        -c:a:1 eac3 -b:a:1 640k \
+        -metadata:s:a:1 title="DD+ 5.1 TV Mix" \
+        -metadata:s:a:1 language=eng \
+        -c:s copy \
+        "$TEMP_FILE" 2>&1 | grep -E "(frame=|error|Error)" | tail -20; then
+
+        echo ""
+        echo "✓ Conversion complete"
+        echo "Replacing original file..."
+
+        # Replace original with new file
+        mv "$TEMP_FILE" "$VIDEO_FILE"
+
+        echo "✓ Done!"
+        echo ""
+        echo "Audio tracks now:"
+        ffprobe -v error -select_streams a -show_entries stream=index,codec_name:stream_tags=title -of default=noprint_wrappers=1 "$VIDEO_FILE" 2>/dev/null
+    else
+        echo ""
+        echo "✗ Error during conversion"
+        [ -f "$TEMP_FILE" ] && rm "$TEMP_FILE"
+        exit 1
+    fi
+else
+    echo "ℹ File already has multiple audio tracks or non-DTS audio:"
+    echo "$CODECS"
+    echo ""
+    echo "No changes needed."
+fi
