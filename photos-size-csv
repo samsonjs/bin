@@ -1,0 +1,52 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+usage() {
+  echo "Usage: $(basename "$0") [path/to/Library.photoslibrary]"
+  echo "Outputs CSV of asset counts and sizes by year and media type."
+  echo "Defaults to ~/Pictures/Photos Library.photoslibrary"
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+lib="${1:-$HOME/Pictures/Photos Library.photoslibrary}"
+
+if [[ ! -d "$lib" ]]; then
+  usage
+  exit 1
+fi
+
+cd "$lib/database"
+
+sqlite3 -header -csv Photos.sqlite "
+  WITH asset_core AS (
+    SELECT
+      datetime(a.ZDATECREATED + 978307200,'unixepoch') AS created_at,
+      a.ZPLAYBACKSTYLE,
+      COALESCE(aa.ZORIGINALFILESIZE,0) AS file_size
+    FROM ZASSET a
+    JOIN ZADDITIONALASSETATTRIBUTES aa
+      ON aa.Z_PK = a.ZADDITIONALATTRIBUTES
+    WHERE a.ZTRASHEDSTATE = 0
+      AND a.ZVISIBILITYSTATE = 0
+      AND a.ZCLOUDDELETESTATE = 0
+  )
+  SELECT
+    strftime('%Y', created_at) AS year,
+    CASE
+      WHEN ZPLAYBACKSTYLE = 4 THEN 'Video'
+      WHEN ZPLAYBACKSTYLE = 3 THEN 'Live Photo'
+      WHEN ZPLAYBACKSTYLE IN (2,5) THEN 'Other Motion'
+      ELSE 'Still Photo'
+    END AS media_type,
+    COUNT(*) AS asset_count,
+    ROUND(SUM(file_size)/1024.0/1024.0, 2) AS total_size_mb,
+    ROUND(SUM(file_size)/1024.0/1024.0/1024.0, 2) AS total_size_gb
+  FROM asset_core
+  GROUP BY 1,2
+  ORDER BY 1,2;
+  "
