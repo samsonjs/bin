@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+#
+# jj-rebase-check: which of your bookmarks will conflict when rebased onto trunk?
+#
+# Lists your local bookmarks that have drifted off trunk (jj's `behind_trunk()`
+# revset, oldest first) and, for each, reports whether rebasing it onto the
+# current trunk would produce merge conflicts — and which files clash.
+#
+# How it tells, without rebasing anything: it creates a throwaway merge of the
+# bookmark and trunk() with `jj new --no-edit`. jj resolves that merge eagerly,
+# materialising any clash as a conflicted commit; we read the conflict state,
+# then abandon the merge. No history is rewritten, so it's safe to run anytime.
+# (A real trial `jj rebase` is no good here: branches that periodically merge
+# main into themselves drag in immutable commits and the rebase is refused.)
+#
+# Oldest first because the longer a branch has been off trunk, the more it has
+# drifted — those are the ones most likely to fight you, so tackle them first.
+#
+# Stacks: a bookmark whose nearest stale ancestor is also a bookmark is shown as
+# "(on <parent>)". The conflict check is always measured against trunk (that's
+# where the whole stack lands), so resolve bottom-up: fix the parent, push,
+# re-run. An upper link's report includes its ancestors' conflicts until then.
+#
+# Usage:
+#   jj-rebase-check              your stale bookmarks, oldest first
+#   jj-rebase-check -a           include everyone's bookmarks, not just yours
+#   jj-rebase-check -v           also list the conflicted files under each
+#   jj-rebase-check foo bar      only check bookmarks foo and bar
+#   jj-rebase-check -h           this help
+
+set -euo pipefail
+
+verbose=0
+mine="& mine()"
+names=()
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-v|--verbose) verbose=1 ;;
+		-a|--all) mine="" ;;
+		-h|--help) awk 'NR>1{if(/^#/){sub(/^# ?/,"");print}else exit}' "$0"; exit 0 ;;
+		-*) echo "jj-rebase-check: unknown option $1" >&2; exit 2 ;;
+		*) names+=("$1") ;;
+	esac
+	shift
+done
+
+if ! jj root >/dev/null 2>&1; then
+	echo "jj-rebase-check: not inside a jj repo" >&2
+	exit 1
+fi
+
+# Candidate revset: stale bookmarks (optionally just yours), narrowed to the
+# named bookmarks if any were given on the command line.
+set="behind_trunk() $mine"
+if [ "${#names[@]}" -gt 0 ]; then
+	filter=""
+	for n in "${names[@]}"; do
+		filter="${filter:+$filter | }bookmarks(exact:\"$n\")"
+	done
+	set="($set) & ($filter)"
+fi
+
+# One row per local bookmark in the set: "epoch<TAB>name", so we can sort oldest
+# first regardless of how the commits relate in the graph.
+rows=$(jj log --no-graph -r "$set" \
+	-T 'self.local_bookmarks().map(|b| committer.timestamp().format("%s") ++ "\t" ++ b.name()).join("\n") ++ "\n"' \
+	2>/dev/null | grep -v '^$' | sort -n -k1) || true
+
+if [ -z "$rows" ]; then
+	echo "No stale bookmarks — everything's on trunk. 🎉"
+	exit 0
+fi
+
+clean=0
+conflicted=0
+# Buffer output into two buckets so conflicts print first, while preserving the
+# oldest-first order within each bucket (tackle the longest-drifted first).
+conflict_out=""
+clean_out=""
+
+while IFS=$'\t' read -r _epoch bk; do
+	[ -n "$bk" ] || continue
+
+	# Nearest stale ancestor bookmark, if any — i.e. the parent in a stack.
+	parent=$(jj log --no-graph \
+		-r "heads((::bookmarks(exact:\"$bk\") ~ bookmarks(exact:\"$bk\")) & ($set))" \
+		-T 'self.local_bookmarks().map(|b| b.name()).join(",")' 2>/dev/null | head -1)
+
+	# Throwaway merge of the bookmark with trunk; capture the new change id.
+	out=$(jj new "$bk" 'trunk()' -m 'jj-rebase-check-probe' --no-edit 2>&1) || {
+		conflict_out+="  ???       $bk (probe failed)"$'\n'
+		continue
+	}
+	cid=$(printf '%s\n' "$out" | sed -n 's/^Created new commit \([a-z]*\) .*/\1/p' | head -1)
+
+	conflict=$(jj log --no-graph -r "$cid" -T 'if(self.conflict(), "1", "0")' 2>/dev/null)
+	files=$(jj log --no-graph -r "$cid" \
+		-T 'self.conflicted_files().map(|f| f.path()).join("\n")' 2>/dev/null)
+
+	jj abandon -r "$cid" >/dev/null 2>&1 || true
+
+	label="$bk"
+	[ -n "$parent" ] && label="$bk  (on $parent)"
+
+	if [ "$conflict" = "1" ]; then
+		conflicted=$((conflicted + 1))
+		n=$(printf '%s\n' "$files" | grep -c . || true)
+		conflict_out+=$(printf '  CONFLICT  %s  [%s file(s)]' "$label" "$n")$'\n'
+		if [ "$verbose" = "1" ]; then
+			conflict_out+=$(printf '%s\n' "$files" | sed 's/^/              /')$'\n'
+		fi
+	else
+		clean=$((clean + 1))
+		clean_out+="  clean     $label"$'\n'
+	fi
+done <<< "$rows"
+
+printf '%s' "$conflict_out$clean_out"
+echo
+printf '%d clean, %d conflicting.\n' "$clean" "$conflicted"
