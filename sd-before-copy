@@ -1,11 +1,3 @@
-#!/bin/zsh
-#
-# sd-before-copy - Pre-backup script for SuperDuper! to run the backup vortex
-#
-# Usage: sd-before-copy (called automatically by SuperDuper!)
+#!/bin/bash
 
-# Redirect stderr to stdout because SuperDuper! interprets any output to stderr as a failure.
-# Mystifying decision but whatever. Easy to work around it.
-# For some reason we have to explicitly set LC_CTYPE for jsonpretty to work in the feedbin plugin.
-# Again, whatever.
-sudo -i -u sjs <<<'source ~/.zshrc && cd ~/Developer/vortex && LC_CTYPE=en_US.UTF-8 script/vortex ingest' 2>&1
+echo skipped, backup vortex moved to mudge
