@@ -188,44 +188,77 @@ func parseSize(_ s: String) -> (Int, Int) {
 
 // MARK: - Watching for the virtual display
 
-/// Runs `fix` a few seconds after a dynamic-resolution-capable display is
-/// added. The delay lets the display finish coming up, and pending work is
-/// replaced rather than stacked so a burst of add events yields one fix.
+/// Polls for a new dynamic-resolution-capable display and runs `fix` a few
+/// seconds after one appears. The delay lets the display finish coming up,
+/// and pending work is replaced rather than stacked. Polling rather than
+/// CGDisplayRegisterReconfigurationCallback because the callback wasn't
+/// delivered to the launchd-spawned process; it's still registered so the
+/// log shows whether it ever fires.
 final class Watcher {
   let width: Int
   let height: Int
   private let queue = DispatchQueue(label: "screenshare-display.fix")
   private var pending: DispatchWorkItem?
+  private var known = Set<CGDirectDisplayID>()
 
   init(width: Int, height: Int) {
     self.width = width
     self.height = height
   }
 
+  private func dynamicCapableDisplays() -> Set<CGDirectDisplayID> {
+    Set(Display.all().filter(\.supportsDynamic).map(\.id))
+  }
+
+  func poll() {
+    let current = dynamicCapableDisplays()
+    for id in current.subtracting(known) { displayAdded(id) }
+    known = current
+  }
+
   func displayAdded(_ id: CGDirectDisplayID) {
-    guard SkyLight.supportsDynamicGeometry(id) else { return }
     log("virtual display \(id) connected, fixing in 3s")
     pending?.cancel()
     let work = DispatchWorkItem { [self] in
-      do {
-        let display = Display.all().first { $0.id == id } ?? Display(id: id, name: "Display \(id)")
-        log(try display.fix(width: width, height: height))
-      } catch {
-        log("fix failed: \(error)")
+      // This process never receives display reconfiguration notifications,
+      // so its view of modes goes stale; a fresh process sees the display
+      // correctly, so run the fix as a child and retry while it settles.
+      for attempt in 1...3 {
+        let (status, output) = runSelf(["fix", "\(width)x\(height)"])
+        log("fix attempt \(attempt): \(output)")
+        if status == 0 { return }
+        sleep(3)
       }
+      log("giving up on display \(id)")
     }
     pending = work
     queue.asyncAfter(deadline: .now() + 3, execute: work)
   }
 
+  private func runSelf(_ arguments: [String]) -> (Int32, String) {
+    let p = Process()
+    p.executableURL = Bundle.main.executableURL
+    p.arguments = arguments
+    let pipe = Pipe()
+    p.standardOutput = pipe
+    p.standardError = pipe
+    do { try p.run() } catch { return (1, "could not launch: \(error)") }
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    p.waitUntilExit()
+    let output = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+    return (p.terminationStatus, output)
+  }
+
   func run() -> Never {
     let context = Unmanaged.passUnretained(self).toOpaque()
-    CGDisplayRegisterReconfigurationCallback({ id, flags, context in
-      guard flags.contains(.addFlag), let context else { return }
-      Unmanaged<Watcher>.fromOpaque(context).takeUnretainedValue().displayAdded(id)
+    CGDisplayRegisterReconfigurationCallback({ id, flags, _ in
+      log("reconfiguration callback: display \(id) flags 0x\(String(flags.rawValue, radix: 16))")
     }, context)
-    log("watching for the Screen Sharing Virtual Display (target \(width)x\(height))")
-    CFRunLoopRun()
+    known = dynamicCapableDisplays()
+    log("watching for the Screen Sharing Virtual Display (target \(width)x\(height)), already online: \(known.sorted())")
+    let timer = Timer(timeInterval: 2, repeats: true) { [self] _ in poll() }
+    RunLoop.main.add(timer, forMode: .common)
+    RunLoop.main.run()
     exit(0)
   }
 }
