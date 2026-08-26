@@ -146,7 +146,7 @@ case "fix":
   if wasDynamic { d.setDynamic(false) }
   d.setMode(width: w, height: h)
   d.setDynamic(true)
-  print("\(d.name): \(d.currentMode.map(describe) ?? "?"), dynamic resolution on")
+  print("\(d.name): \(d.currentMode.map(describe) ?? "?"), dynamic resolution \(d.dynamicEnabled ? "on" : "off")")
 
 default:
   die("unknown command \(command); use list, modes, dynamic on|off, set WxH, or fix [WxH]")
