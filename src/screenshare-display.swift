@@ -78,18 +78,38 @@ struct Display {
     guard err == 0 else { die("SLSDisplaySetDynamicGeometryEnabled failed with error \(err)") }
   }
 
-  func setMode(width: Int, height: Int) {
-    // Prefer 1x modes (pixel size == point size) so 3840x2160 is a real 4K
-    // desktop, then the highest refresh rate.
-    let candidates = modes
+  /// Prefers 1x modes (pixel size == point size) so 3840x2160 is a real 4K
+  /// desktop, then the highest refresh rate.
+  func findMode(width: Int, height: Int) -> CGDisplayMode? {
+    modes
       .filter { $0.pixelWidth == width && $0.pixelHeight == height && $0.isUsableForDesktopGUI() }
       .sorted { a, b in
         if (a.width == a.pixelWidth) != (b.width == b.pixelWidth) { return a.width == a.pixelWidth }
         return a.refreshRate > b.refreshRate
       }
-    guard let mode = candidates.first else {
+      .first
+  }
+
+  /// While dynamic resolution is active the display only advertises modes
+  /// shaped like the viewer, and the full list comes back a moment after it's
+  /// turned off.
+  func waitForMode(width: Int, height: Int, timeout: TimeInterval = 5) -> CGDisplayMode? {
+    let deadline = Date().addingTimeInterval(timeout)
+    while Date() < deadline {
+      if let mode = findMode(width: width, height: height) { return mode }
+      usleep(100_000)
+    }
+    return nil
+  }
+
+  func setMode(width: Int, height: Int) {
+    guard let mode = waitForMode(width: width, height: height) else {
       die("no \(width)x\(height) mode on \(name); run `modes` to see what's available")
     }
+    setMode(mode)
+  }
+
+  func setMode(_ mode: CGDisplayMode) {
     var config: CGDisplayConfigRef?
     guard CGBeginDisplayConfiguration(&config) == .success,
           CGConfigureDisplayWithDisplayMode(config, id, mode, nil) == .success,
@@ -98,6 +118,35 @@ struct Display {
       CGCancelDisplayConfiguration(config)
       die("failed to set mode on \(name)")
     }
+  }
+}
+
+extension Display {
+  func waitForCurrentMode(width: Int, height: Int, timeout: TimeInterval = 5) {
+    let deadline = Date().addingTimeInterval(timeout)
+    while Date() < deadline {
+      if let m = currentMode, m.pixelWidth == width, m.pixelHeight == height { return }
+      usleep(100_000)
+    }
+    die("mode change to \(width)x\(height) on \(name) didn't take within \(Int(timeout))s")
+  }
+
+  /// Returns true once dynamic resolution has read back as enabled for
+  /// `stableFor` seconds straight, re-enabling it whenever it flips off.
+  func enableDynamicUntilStable(stableFor: TimeInterval = 2, timeout: TimeInterval = 15) -> Bool {
+    let deadline = Date().addingTimeInterval(timeout)
+    var onSince: Date?
+    while Date() < deadline {
+      if dynamicEnabled {
+        onSince = onSince ?? Date()
+        if Date().timeIntervalSince(onSince!) >= stableFor { return true }
+      } else {
+        onSince = nil
+        setDynamic(true)
+      }
+      usleep(250_000)
+    }
+    return false
   }
 }
 
@@ -142,11 +191,20 @@ case "set":
 case "fix":
   let (w, h) = parseSize(args.first ?? "3840x2160")
   let d = Display.virtual()
-  let wasDynamic = d.dynamicEnabled
-  if wasDynamic { d.setDynamic(false) }
-  d.setMode(width: w, height: h)
-  d.setDynamic(true)
-  print("\(d.name): \(d.currentMode.map(describe) ?? "?"), dynamic resolution \(d.dynamicEnabled ? "on" : "off")")
+  if d.dynamicEnabled { d.setDynamic(false) }
+  guard let mode = d.waitForMode(width: w, height: h) else {
+    d.setDynamic(true)
+    die("no \(w)x\(h) mode on \(d.name); run `modes` to see what's available")
+  }
+  d.setMode(mode)
+  // WindowServer keeps reconfiguring for a few seconds after the mode change
+  // and reverts the flag while it does, so re-assert it until it has stayed
+  // on for a while.
+  d.waitForCurrentMode(width: w, height: h)
+  let stuck = d.enableDynamicUntilStable()
+  let state = stuck ? "on" : "off (failed to re-enable)"
+  print("\(d.name): \(d.currentMode.map(describe) ?? "?"), dynamic resolution \(state)")
+  if !stuck { exit(1) }
 
 default:
   die("unknown command \(command); use list, modes, dynamic on|off, set WxH, or fix [WxH]")
