@@ -40,7 +40,6 @@ Most follow the Unix philosophy of doing one thing well, though some have grown 
 - [**save-keyboard-shortcuts.sh**](https://github.com/samsonjs/config/blob/main/bin/save-keyboard-shortcuts.sh) - Export macOS keyboard shortcuts to file
 - [**scale-app-icons**](https://github.com/samsonjs/config/blob/main/bin/scale-app-icons) - Generate iOS and macOS app icons at all required sizes
 - [**screen-shell**](https://github.com/samsonjs/config/blob/main/bin/screen-shell) - Screen session management utility
-- [**sd-before-copy**](https://github.com/samsonjs/config/blob/main/bin/sd-before-copy) - Pre-backup script for SuperDuper! to run Vortex backup system
 - [**serve**](https://github.com/samsonjs/config/blob/main/bin/serve) - Start simple HTTP server (default port 8080)
 - [**sri-integrity**](https://github.com/samsonjs/config/blob/main/bin/sri-integrity) - Generate Sub-Resource Integrity hashes for external resources
 - [**youtube-snarf-audio**](https://github.com/samsonjs/config/blob/main/bin/youtube-snarf-audio) - Extract audio from YouTube videos
