@@ -17,30 +17,36 @@ Most follow the Unix philosophy of doing one thing well, though some have grown 
 
 ## The collection
 
-- [**colours.rb**](https://github.com/samsonjs/config/blob/main/bin/colours.rb) - Convert between color formats (hex, RGB, UIColor)
-- [**convert-all-songs**](https://github.com/samsonjs/config/blob/main/bin/convert-all-songs) - Batch convert audio files to different formats
-- [**convert-song**](https://github.com/samsonjs/config/blob/main/bin/convert-song) - Convert single audio file to different format
-- [**diff-so-fancy**](https://github.com/samsonjs/config/blob/main/bin/diff-so-fancy) - Enhanced git diff output with better formatting ([source](https://github.com/so-fancy/diff-so-fancy))
-- [**enable-sudo-touch-id**](https://github.com/samsonjs/config/blob/main/bin/enable-sudo-touch-id) - Enable Touch ID authentication for sudo commands
-- [**finder-show-hidden-files**](https://github.com/samsonjs/config/blob/main/bin/finder-show-hidden-files) - Toggle visibility of hidden files in Finder
-- [**generate-xcode-imageset**](https://github.com/samsonjs/config/blob/main/bin/generate-xcode-imageset) - Generate Xcode imageset from @2x and @3x images
-- [**git-conflicts**](https://github.com/samsonjs/config/blob/main/bin/git-conflicts) - List files in merge conflict state
-- [**git-diff-merge-conflict-resolution**](https://github.com/samsonjs/config/blob/main/bin/git-diff-merge-conflict-resolution) - Show diff for merge conflict resolution
-- [**git-edit-conflicted-files**](https://github.com/samsonjs/config/blob/main/bin/git-edit-conflicted-files) - Open all conflicted files in editor
-- [**git-large-files**](https://github.com/samsonjs/config/blob/main/bin/git-large-files) - Find largest objects in git repository pack files
-- [**git-open-in-github**](https://github.com/samsonjs/config/blob/main/bin/git-open-in-github) - Open current repo/branch in GitHub web interface
-- [**git-remove-merged-branches**](https://github.com/samsonjs/config/blob/main/bin/git-remove-merged-branches) - Delete merged branches from remote repository
-- [**git-uncommit**](https://github.com/samsonjs/config/blob/main/bin/git-uncommit) - Undo the last commit (soft reset)
-- [**git-update**](https://github.com/samsonjs/config/blob/main/bin/git-update) - Update and rebase current branch from remote with stash management
-- [**jsonugly**](https://github.com/samsonjs/config/blob/main/bin/jsonugly) - Minify JSON by removing whitespace
-- [**make-bookmarklet**](https://github.com/samsonjs/config/blob/main/bin/make-bookmarklet) - Convert JavaScript code to bookmarklet format
-- [**progress**](https://github.com/samsonjs/config/blob/main/bin/progress) - Add progress indicators to piped data streams
-- [**retina-scale**](https://github.com/samsonjs/config/blob/main/bin/retina-scale) - Scale images for 1x, 2x, and 3x display densities
-- [**roll**](https://github.com/samsonjs/config/blob/main/bin/roll) - Random choice selector from command line arguments
-- [**save-keyboard-shortcuts.sh**](https://github.com/samsonjs/config/blob/main/bin/save-keyboard-shortcuts.sh) - Export macOS keyboard shortcuts to file
-- [**scale-app-icons**](https://github.com/samsonjs/config/blob/main/bin/scale-app-icons) - Generate iOS and macOS app icons at all required sizes
-- [**screen-shell**](https://github.com/samsonjs/config/blob/main/bin/screen-shell) - Screen session management utility
-- [**serve**](https://github.com/samsonjs/config/blob/main/bin/serve) - Start simple HTTP server (default port 8080)
-- [**sri-integrity**](https://github.com/samsonjs/config/blob/main/bin/sri-integrity) - Generate Sub-Resource Integrity hashes for external resources
-- [**youtube-snarf-audio**](https://github.com/samsonjs/config/blob/main/bin/youtube-snarf-audio) - Extract audio from YouTube videos
+- [**add-eac3-audio**](https://github.com/samsonjs/bin/blob/main/add-eac3-audio) - Add a DD+ 5.1 TV mix to movies that only have DTS audio
+- [**colours.rb**](https://github.com/samsonjs/bin/blob/main/colours.rb) - Convert between color formats (hex, RGB, UIColor)
+- [**convert-all-songs**](https://github.com/samsonjs/bin/blob/main/convert-all-songs) - Batch convert audio files to different formats
+- [**convert-song**](https://github.com/samsonjs/bin/blob/main/convert-song) - Convert single audio file to different format
+- [**dfn**](https://github.com/samsonjs/bin/blob/main/dfn) - df without the noise - just the volumes you see on the desktop
+- [**diff-so-fancy**](https://github.com/samsonjs/bin/blob/main/diff-so-fancy) - Enhanced git diff output with better formatting ([source](https://github.com/so-fancy/diff-so-fancy))
+- [**enable-sudo-touch-id**](https://github.com/samsonjs/bin/blob/main/enable-sudo-touch-id) - Enable Touch ID authentication for sudo commands
+- [**finder-show-hidden-files**](https://github.com/samsonjs/bin/blob/main/finder-show-hidden-files) - Toggle visibility of hidden files in Finder
+- [**generate-xcode-imageset**](https://github.com/samsonjs/bin/blob/main/generate-xcode-imageset) - Generate Xcode imageset from @2x and @3x images
+- [**git-conflicts**](https://github.com/samsonjs/bin/blob/main/git-conflicts) - List files in merge conflict state
+- [**git-diff-merge-conflict-resolution**](https://github.com/samsonjs/bin/blob/main/git-diff-merge-conflict-resolution) - Show diff for merge conflict resolution
+- [**git-edit-conflicted-files**](https://github.com/samsonjs/bin/blob/main/git-edit-conflicted-files) - Open all conflicted files in editor
+- [**git-large-files**](https://github.com/samsonjs/bin/blob/main/git-large-files) - Find largest objects in git repository pack files
+- [**git-open-in-github**](https://github.com/samsonjs/bin/blob/main/git-open-in-github) - Open current repo/branch in GitHub web interface
+- [**git-remove-merged-branches**](https://github.com/samsonjs/bin/blob/main/git-remove-merged-branches) - Delete merged branches from remote repository
+- [**git-uncommit**](https://github.com/samsonjs/bin/blob/main/git-uncommit) - Undo the last commit (soft reset)
+- [**git-update**](https://github.com/samsonjs/bin/blob/main/git-update) - Update and rebase current branch from remote with stash management
+- [**jj-rebase-check**](https://github.com/samsonjs/bin/blob/main/jj-rebase-check) - Show which jj bookmarks will conflict when rebased onto trunk
+- [**jsonugly**](https://github.com/samsonjs/bin/blob/main/jsonugly) - Minify JSON by removing whitespace
+- [**make-bookmarklet**](https://github.com/samsonjs/bin/blob/main/make-bookmarklet) - Convert JavaScript code to bookmarklet format
+- [**mem-report**](https://github.com/samsonjs/bin/blob/main/mem-report) - Memory use by grouped program, matching Activity Monitor's footprint
+- [**photos-size-csv**](https://github.com/samsonjs/bin/blob/main/photos-size-csv) - CSV of Photos library asset counts and sizes by year and media type
+- [**progress**](https://github.com/samsonjs/bin/blob/main/progress) - Add progress indicators to piped data streams
+- [**retina-scale**](https://github.com/samsonjs/bin/blob/main/retina-scale) - Scale images for 1x, 2x, and 3x display densities
+- [**roll**](https://github.com/samsonjs/bin/blob/main/roll) - Random choice selector from command line arguments
+- [**save-keyboard-shortcuts.sh**](https://github.com/samsonjs/bin/blob/main/save-keyboard-shortcuts.sh) - Export macOS keyboard shortcuts to file
+- [**scale-app-icons**](https://github.com/samsonjs/bin/blob/main/scale-app-icons) - Generate iOS and macOS app icons at all required sizes
+- [**screen-shell**](https://github.com/samsonjs/bin/blob/main/screen-shell) - Screen session management utility
+- [**screenshare-display**](https://github.com/samsonjs/bin/blob/main/src/screenshare-display.swift) - Fix the Screen Sharing virtual display sticking at 1080p
+- [**serve**](https://github.com/samsonjs/bin/blob/main/serve) - Start simple HTTP server (default port 8080)
+- [**sri-integrity**](https://github.com/samsonjs/bin/blob/main/sri-integrity) - Generate Sub-Resource Integrity hashes for external resources
+- [**youtube-snarf-audio**](https://github.com/samsonjs/bin/blob/main/youtube-snarf-audio) - Extract audio from YouTube videos
 
