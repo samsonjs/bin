@@ -30,7 +30,6 @@ Most follow the Unix philosophy of doing one thing well, though some have grown 
 - [**git-diff-merge-conflict-resolution**](https://github.com/samsonjs/bin/blob/main/git-diff-merge-conflict-resolution) - Show diff for merge conflict resolution
 - [**git-edit-conflicted-files**](https://github.com/samsonjs/bin/blob/main/git-edit-conflicted-files) - Open all conflicted files in editor
 - [**git-large-files**](https://github.com/samsonjs/bin/blob/main/git-large-files) - Find largest objects in git repository pack files
-- [**git-open-in-github**](https://github.com/samsonjs/bin/blob/main/git-open-in-github) - Open current repo/branch in GitHub web interface
 - [**git-remove-merged-branches**](https://github.com/samsonjs/bin/blob/main/git-remove-merged-branches) - Delete merged branches from remote repository
 - [**git-uncommit**](https://github.com/samsonjs/bin/blob/main/git-uncommit) - Undo the last commit (soft reset)
 - [**git-update**](https://github.com/samsonjs/bin/blob/main/git-update) - Update and rebase current branch from remote with stash management
