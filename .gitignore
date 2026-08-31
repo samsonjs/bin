@@ -21,3 +21,5 @@ docker*
 kube*
 orb*
 ose-deploy
+__pycache__/
+*.pyc
