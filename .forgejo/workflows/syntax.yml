@@ -1,0 +1,69 @@
+# Syntax checks for the scripts, on mudge's Forgejo runner.
+#
+# No `uses:` steps: every action has to be fetched from data.forgejo.org at job
+# start, and that has already broken once. A shell checkout with the job token
+# needs nothing but git.
+#
+# The docker label maps to a plain image; the container below is what actually
+# runs. ruby:4.0.5 is what the other repos already pull, so it's cached on the
+# runner, and it carries bash, dash, perl and python3 on top of ruby. It has no
+# zsh, so the zsh scripts are skipped rather than run through bash -n, which
+# would reject valid zsh. No shellcheck for now: most of these predate it and
+# the noise would drown anything useful.
+
+name: Syntax
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: syntax-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Syntax check
+    runs-on: docker
+    container:
+      image: docker.io/library/ruby:4.0.5
+    timeout-minutes: 5
+    steps:
+      - name: Check out
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q .
+          # Scoped to this process, not `git config --global`: in host mode "global"
+          # is the real ~/.gitconfig, and appending to it every run pollutes it.
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=safe.directory
+          export GIT_CONFIG_VALUE_0="$PWD"
+          git remote remove origin 2>/dev/null || true
+          git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c http.extraheader="Authorization: Basic $(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')" \
+              fetch -q --depth 1 origin "$GITHUB_SHA"
+          git checkout -qf FETCH_HEAD
+
+      # Each script is checked by whatever its shebang names. Files without a
+      # shebang (the compiled tools) are left alone. Every failure is reported
+      # before the step fails, so one bad script doesn't hide another.
+      - name: Check syntax
+        run: |
+          status=0
+          for f in *; do
+            [ -f "$f" ] && [ -x "$f" ] || continue
+            shebang=$(head -n 1 "$f" | tr -d '\0')
+            case "$shebang" in
+              '#!'*bash*)   echo "bash   $f"; bash -n "$f" ;;
+              '#!'*zsh*)    echo "skip   $f (no zsh in this image)"; continue ;;
+              '#!/bin/sh'*) echo "sh     $f"; sh -n "$f" ;;
+              '#!'*ruby*)   echo "ruby   $f"; ruby -wc "$f" > /dev/null ;;
+              '#!'*perl*)   echo "perl   $f"; perl -c "$f" ;;
+              '#!'*python*) echo "python $f"; python3 -m py_compile "$f" ;;
+              *) continue ;;
+            esac || { echo "FAIL   $f"; status=1; }
+          done
+          exit $status

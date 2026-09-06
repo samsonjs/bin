@@ -1,0 +1,58 @@
+# Keeps screenshare-display.swift compiling against the current Xcode, on the
+# one Mac runner.
+#
+# Same hand-rolled checkout as syntax.yml, for the same reason. Path-filtered
+# and cancel-in-progress because the Mac runner is shared: script-only changes
+# shouldn't occupy it, and neither should a run a newer push has superseded.
+
+name: Mac
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - ".forgejo/workflows/mac.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - ".forgejo/workflows/mac.yml"
+
+concurrency:
+  group: mac-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build screenshare-display
+    runs-on: macos-arm64
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q .
+          # Scoped to this process, not `git config --global`: in host mode "global"
+          # is the real ~/.gitconfig, and appending to it every run pollutes it.
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=safe.directory
+          export GIT_CONFIG_VALUE_0="$PWD"
+          git remote remove origin 2>/dev/null || true
+          git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c http.extraheader="Authorization: Basic $(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')" \
+              fetch -q --depth 1 origin "$GITHUB_SHA"
+          git checkout -qf FETCH_HEAD
+
+      # Cheap, and the first thing you want when the compile fails.
+      - name: Show toolchain
+        run: |
+          xcode-select -p
+          swiftc -version
+
+      # -B because the built binary is tracked in git: after a fresh checkout it
+      # is as new as the source, so make would otherwise call it up to date and
+      # compile nothing.
+      - name: Build
+        run: make -B -C src
