@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # dfn: df normalized, or df not noisy, or df nicely, or df new
 #
