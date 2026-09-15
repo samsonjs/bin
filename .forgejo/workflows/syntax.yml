@@ -28,7 +28,7 @@ jobs:
     name: Syntax check
     runs-on: docker
     container:
-      image: docker.io/library/ruby:4.0.5
+      image: git.samhuri.net/sjs/ruby:4.0.5
     timeout-minutes: 5
     steps:
       - name: Check out
