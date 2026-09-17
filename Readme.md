@@ -22,7 +22,6 @@ Most follow the Unix philosophy of doing one thing well, though some have grown 
 - [**convert-all-songs**](https://github.com/samsonjs/bin/blob/main/convert-all-songs) - Batch convert audio files to different formats
 - [**convert-song**](https://github.com/samsonjs/bin/blob/main/convert-song) - Convert single audio file to different format
 - [**dfn**](https://github.com/samsonjs/bin/blob/main/dfn) - df without the noise - just the volumes you see on the desktop
-- [**diff-so-fancy**](https://github.com/samsonjs/bin/blob/main/diff-so-fancy) - Enhanced git diff output with better formatting ([source](https://github.com/so-fancy/diff-so-fancy))
 - [**enable-sudo-touch-id**](https://github.com/samsonjs/bin/blob/main/enable-sudo-touch-id) - Enable Touch ID authentication for sudo commands
 - [**finder-show-hidden-files**](https://github.com/samsonjs/bin/blob/main/finder-show-hidden-files) - Toggle visibility of hidden files in Finder
 - [**generate-xcode-imageset**](https://github.com/samsonjs/bin/blob/main/generate-xcode-imageset) - Generate Xcode imageset from @2x and @3x images
