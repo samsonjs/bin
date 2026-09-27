@@ -6,13 +6,46 @@
 # token as the runner report (see clients/mac/README.md in
 # mudge.samhuri.net).
 #
+# Reading one back doesn't touch mudge at all: omg.lol serves a paste's raw
+# content with no auth, so `-r` fetches it straight from paste.lol.
+#
 #   caddy fmt Caddyfile | pb
 #   zfs list | pb tank-snapshot
+#   pb -r https://sjs.paste.lol/tank-snapshot
+#   pb -r tank-snapshot
 
 set -euo pipefail
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   echo "usage: pb [TITLE] < content"
+  echo "       pb -r URL|TITLE"
+  exit 0
+fi
+
+if [[ "${1:-}" == "-r" || "${1:-}" == "--read" ]]; then
+  REF="${2:-}"
+  if [[ -z "$REF" ]]; then
+    echo "usage: pb -r URL|TITLE" >&2
+    exit 1
+  fi
+  case "$REF" in
+    http://* | https://*)
+      RAW_URL="${REF%/raw}"
+      RAW_URL="${RAW_URL%/}/raw"
+      ;;
+    *)
+      RAW_URL="https://${PB_ADDRESS:-sjs}.paste.lol/${REF}/raw"
+      ;;
+  esac
+
+  BODY_FILE=$(mktemp)
+  trap 'rm -f "$BODY_FILE"' EXIT
+  HTTP_STATUS=$(curl -sS -o "$BODY_FILE" -w '%{http_code}' "$RAW_URL")
+  if [[ "$HTTP_STATUS" != 2* ]]; then
+    echo "pb: $RAW_URL answered $HTTP_STATUS" >&2
+    exit 1
+  fi
+  cat "$BODY_FILE"
   exit 0
 fi
 
