@@ -11,6 +11,11 @@
 
 set -euo pipefail
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo "usage: pb [TITLE] < content"
+  exit 0
+fi
+
 URL="${PB_URL:-http://mudge/api/pastebin}"
 TOKEN_PATH="${PB_TOKEN_PATH:-$HOME/Library/Application Support/mudge-report/token}"
 TITLE="${1:-}"
@@ -22,17 +27,28 @@ fi
 TOKEN=$(<"$TOKEN_PATH")
 
 CONTENT=$(cat)
+if [[ -z "$CONTENT" ]]; then
+  echo "pb: nothing on stdin" >&2
+  exit 1
+fi
 
-RESPONSE=$(jq -n --arg title "$TITLE" --arg content "$CONTENT" '{title: $title, content: $content}' |
-  curl -sS -X POST "$URL" \
+BODY_FILE=$(mktemp)
+trap 'rm -f "$BODY_FILE"' EXIT
+
+HTTP_STATUS=$(jq -n --arg title "$TITLE" --arg content "$CONTENT" '{title: $title, content: $content}' |
+  curl -sS -o "$BODY_FILE" -w '%{http_code}' -X POST "$URL" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Content-Type: application/json" \
     --data @-)
 
-PASTE_URL=$(jq -r '.url // empty' <<<"$RESPONSE")
+if [[ "$HTTP_STATUS" != 2* ]]; then
+  echo "pb: mudge answered $HTTP_STATUS: $(cat "$BODY_FILE")" >&2
+  exit 1
+fi
+
+PASTE_URL=$(jq -r '.url // empty' "$BODY_FILE")
 if [[ -z "$PASTE_URL" ]]; then
-  echo "pb: failed to create paste" >&2
-  echo "$RESPONSE" >&2
+  echo "pb: mudge answered 2xx with no url: $(cat "$BODY_FILE")" >&2
   exit 1
 fi
 
