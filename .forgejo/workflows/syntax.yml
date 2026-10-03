@@ -1,8 +1,9 @@
 # Syntax checks for the scripts, on mudge's Forgejo runner.
 #
-# No `uses:` steps: every action has to be fetched from data.forgejo.org at job
-# start, and that has already broken once. A shell checkout with the job token
-# needs nothing but git.
+# No actions from data.forgejo.org: they're fetched at job start, and that has
+# already broken once. The syntax check uses a shell checkout with the job
+# token, which needs nothing but git; the workflow lint uses sjs/actions from
+# git.samhuri.net.
 #
 # The docker label maps to a plain image; the container below is what actually
 # runs. ruby:4.0.5 is what the other repos already pull, so it's cached on the
@@ -67,3 +68,13 @@ jobs:
             esac || { echo "FAIL   $f"; status=1; }
           done
           exit $status
+
+  workflows:
+    name: Lint workflows
+    runs-on: docker
+    container:
+      image: docker.io/library/ruby:4.0.5
+    timeout-minutes: 5
+    steps:
+      - uses: https://git.samhuri.net/sjs/actions/checkout@v1
+      - uses: https://git.samhuri.net/sjs/actions/actionlint@v1
